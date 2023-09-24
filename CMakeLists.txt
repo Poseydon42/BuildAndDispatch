@@ -12,6 +12,8 @@ set(SOURCES
     Source/Core/Logger.h
     Source/Core/Main.cpp
     Source/Platform/File.h
+    Source/Renderer/Buffer.cpp
+    Source/Renderer/Buffer.h
     Source/Renderer/Renderer.cpp
     Source/Renderer/Renderer.h
     Source/Renderer/Shader.cpp

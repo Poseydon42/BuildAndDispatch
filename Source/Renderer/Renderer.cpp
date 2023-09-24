@@ -43,15 +43,13 @@ void Renderer::BeginFrame(glm::vec2 CameraLocation, float PixelsPerMeter)
 
 	m_ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_DebugLineVertexBuffer);
-	m_NextDebugLinePtr = static_cast<DebugLineVertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+	m_NextDebugLinePtr = static_cast<DebugLineVertex*>(m_DebugLineVertexBuffer->Map(false, true));
 	m_DebugLineCount = 0;
 }
 
 void Renderer::EndFrame()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, m_DebugLineVertexBuffer);
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	m_DebugLineVertexBuffer->Unmap();
 
 	m_DebugLineShader->Bind();
 	m_DebugLineShader->SetUniform("u_ViewMatrix", m_ViewProjectionMatrix);
@@ -74,14 +72,13 @@ void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 
 Renderer::Renderer(Window& Window, std::unique_ptr<Shader> DebugLineShader)
 	: m_Window(Window)
+	, m_DebugLineVertexBuffer(Buffer::Create(s_DebugLineBufferSize, {}, GL_DYNAMIC_DRAW))
 	, m_DebugLineShader(std::move(DebugLineShader))
 {
 	glGenVertexArrays(1, &m_DebugLineVAO);
 	glBindVertexArray(m_DebugLineVAO);
 
-	glGenBuffers(1, &m_DebugLineVertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_DebugLineVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, s_DebugLineBufferSize, nullptr, GL_DYNAMIC_DRAW);
+	m_DebugLineVertexBuffer->Bind(GL_ARRAY_BUFFER);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(DebugLineVertex), std::bit_cast<void*>(offsetof(DebugLineVertex, Position)));
 	glEnableVertexAttribArray(0);

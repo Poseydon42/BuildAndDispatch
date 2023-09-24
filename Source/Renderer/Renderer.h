@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "Renderer/Buffer.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Window.h"
 
@@ -19,7 +20,7 @@ public:
 private:
 	Window& m_Window;
 
-	glm::mat4 m_ViewProjectionMatrix;
+	glm::mat4 m_ViewProjectionMatrix = {};
 
 	/**************************************
 	 ********* DEBUG LINE DRAWING *********
@@ -33,7 +34,7 @@ private:
 	static constexpr size_t s_MaxDebugLineCount = 4096;
 	static constexpr size_t s_DebugLineBufferSize = s_MaxDebugLineCount * 2 * sizeof(DebugLineVertex);
 
-	GLuint m_DebugLineVertexBuffer = -1;
+	std::unique_ptr<Buffer> m_DebugLineVertexBuffer;
 	GLuint m_DebugLineVAO = -1;
 	DebugLineVertex* m_NextDebugLinePtr = nullptr;
 	size_t m_DebugLineCount = 0;

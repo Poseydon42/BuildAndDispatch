@@ -22,6 +22,9 @@ set(SOURCES
     Source/Renderer/Window.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
+    Source/View/TrackView.cpp
+    Source/View/TrackView.h
+    Source/View/View.h
     Source/Windows/File.cpp
     Source/Windows/File.h
 )

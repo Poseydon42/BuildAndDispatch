@@ -20,6 +20,8 @@ set(SOURCES
     Source/Renderer/Shader.h
     Source/Renderer/Window.cpp
     Source/Renderer/Window.h
+    Source/Simulation/World.cpp
+    Source/Simulation/World.h
     Source/Windows/File.cpp
     Source/Windows/File.h
 )

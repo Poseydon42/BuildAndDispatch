@@ -92,6 +92,29 @@ void World::AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
 	AddTrackInSingleDirection(ToX, ToY, FromX, FromY);
 }
 
+void World::AddSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
+{
+	glm::ivec2 From = { FromX, FromY };
+	glm::ivec2 To = { ToX, ToY };
+
+	BD_ASSERT(std::abs(FromX - ToX) <= 1 && std::abs(FromY - ToY) <= 1 && From != To);
+
+	auto ExistingSignal = std::ranges::find_if(m_Signals, [&](const Signal& Candidate) { return Candidate.From == From && Candidate.To == To; });
+	if (ExistingSignal != m_Signals.end())
+	{
+		BD_LOG_WARNING("Trying to add signal from tile ({}, {}) to tile ({}, {}), which already exists", FromX, FromY, ToX, ToY);
+		return;
+	}
+
+	Signal NewSignal =
+	{
+		.From = From,
+		.To = To,
+		.State = SignalState::Danger
+	};
+	m_Signals.push_back(NewSignal);
+}
+
 bool World::IsPoint(int32_t TileX, int32_t TileY) const
 {
 	return ListValidPathsInTile(TileX, TileY).size() > 1;
@@ -113,6 +136,11 @@ void World::SwitchPoint(int32_t TileX, int32_t TileY)
 std::span<const TrackTile> World::TrackTiles() const
 {
 	return m_TrackTiles;
+}
+
+std::span<const Signal> World::Signals() const
+{
+	return m_Signals;
 }
 
 void World::AddTrackInSingleDirection(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)

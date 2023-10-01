@@ -14,4 +14,6 @@ private:
 	static constexpr glm::vec3 s_TrackColor = { 0.4f, 0.4f, 0.4f };
 
 	void RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const;
+
+	void RenderSignal(Renderer& Renderer, const Signal& Signal) const;
 };

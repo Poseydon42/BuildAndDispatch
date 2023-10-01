@@ -58,6 +58,13 @@ TrackDirection TrackDirectionFromVector(glm::ivec2 Direction);
 
 glm::ivec2 TrackDirectionToVector(TrackDirection Direction);
 
+enum class SignalState
+{
+	Danger = 0,
+	Clear,
+	_Count
+};
+
 constexpr bool IsDeadEnd(TrackDirection Direction)
 {
 	return (Direction == TrackDirection::N || Direction == TrackDirection::NE || Direction == TrackDirection::E || Direction == TrackDirection::SE ||
@@ -72,10 +79,20 @@ struct TrackTile
 	uint32_t SelectedDirectionIndex = 0;
 };
 
+struct Signal
+{
+	glm::ivec2 From;
+	glm::ivec2 To;
+
+	SignalState State = SignalState::Danger;
+};
+
 class World
 {
 public:
 	void AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
+
+	void AddSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 
 	std::vector<TrackDirection> ListValidPathsInTile(int32_t TileX, int32_t TileY) const;
 
@@ -84,9 +101,11 @@ public:
 	void SwitchPoint(int32_t TileX, int32_t TileY);
 
 	std::span<const TrackTile> TrackTiles() const;
+	std::span<const Signal> Signals() const;
 
 private:
 	std::vector<TrackTile> m_TrackTiles;
+	std::vector<Signal> m_Signals;
 
 	void AddTrackInSingleDirection(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 

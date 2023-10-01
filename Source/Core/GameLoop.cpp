@@ -43,6 +43,11 @@ static void GenerateDebugWorld(World& World)
 	World.AddTrack(-3, 0, -2, -1);
 	World.AddTrack(3, 1, 4, 0);
 	World.AddTrack(4, -1, 5, 0);
+
+	World.AddSignal(-3, 1, -4, 0);
+	World.AddSignal(-2, -1, -3, 0);
+	World.AddSignal(2, 1, 3, 1);
+	World.AddSignal(4, -1, 5, 0);
 }
 
 static glm::ivec2 CursorPositionToTile(int32_t CursorX, int32_t CursorY, glm::vec2 CameraLocation, float PixelsPerMeter)

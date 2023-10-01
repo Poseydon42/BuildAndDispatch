@@ -8,6 +8,8 @@ project(BuildAndDispatch CXX)
 
 set(SOURCES
     Source/Core/Assert.h
+    Source/Core/GameLoop.cpp
+    Source/Core/GameLoop.h
     Source/Core/Logger.cpp
     Source/Core/Logger.h
     Source/Core/Main.cpp

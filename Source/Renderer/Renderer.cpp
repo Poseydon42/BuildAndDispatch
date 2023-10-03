@@ -29,7 +29,7 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 void Renderer::BeginFrame(glm::vec2 CameraLocation, float PixelsPerMeter)
 {
 	glViewport(0, 0, m_Window.Width(), m_Window.Height());
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	auto ViewMatrix = glm::mat4(1.0f);

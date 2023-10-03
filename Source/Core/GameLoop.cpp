@@ -1,7 +1,9 @@
 #include "GameLoop.h"
 
+#include <algorithm>
+
 #include "Core/Logger.h"
-#include "View/TrackView.h"
+#include "Layer/TrackLayer.h"
 
 static constexpr uint32_t WindowWidth = 1280;
 static constexpr uint32_t WindowHeight = 720;
@@ -50,20 +52,6 @@ static void GenerateDebugWorld(World& World)
 	World.AddSignal(4, -1, 5, 0);
 }
 
-static glm::ivec2 CursorPositionToTile(int32_t CursorX, int32_t CursorY, glm::vec2 CameraLocation, float PixelsPerMeter)
-{
-	float NormalizedX = (static_cast<float>(CursorX) / WindowWidth) * 2.0f - 1.0f;
-	float NormalizedY = -((static_cast<float>(CursorY) / WindowHeight) * 2.0f - 1.0f);
-
-	auto ScaledX = NormalizedX * (0.5f * WindowWidth) / PixelsPerMeter + CameraLocation.x;
-	auto ScaledY = NormalizedY * (0.5f * WindowHeight) / PixelsPerMeter + CameraLocation.y;
-
-	auto TileX = static_cast<int>(std::lround(ScaledX));
-	auto TileY = static_cast<int>(std::lround(ScaledY));
-
-	return { TileX, TileY };
-}
-
 std::unique_ptr<GameLoop> GameLoop::Create()
 {
 	auto Window = Window::Create(WindowWidth, WindowHeight, WindowName);
@@ -96,9 +84,9 @@ int GameLoop::Run()
 		auto PixelsPerMeter = m_CameraScale * DefaultPixelsPerMeter;
 		m_Renderer->BeginFrame(m_CameraLocation, PixelsPerMeter);
 
-		for (const auto& View : m_Views)
+		for (const auto& Layer : m_Layers)
 		{
-			View->Render(*m_Renderer, m_World);
+			Layer->Render(*m_Renderer, m_World);
 		}
 
 		m_Renderer->EndFrame();
@@ -111,17 +99,18 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 	: m_Window(std::move(Window))
 	, m_Renderer(std::move(Renderer))
 {
-	m_Views.push_back(std::make_unique<TrackView>());
+	m_Layers.push_back(std::make_unique<TrackLayer>());
 
 	GenerateDebugWorld(m_World);
 
 	m_Window->AddMouseButtonCallback([this](MouseButton Button, ButtonEventType Type, int32_t CursorX, int32_t CursorY)
 	{
-		if (Button != MouseButton::Left || Type != ButtonEventType::Release)
-			return;
-
-		auto Tile = CursorPositionToTile(CursorX, CursorY, m_CameraLocation, m_CameraScale * DefaultPixelsPerMeter);
-
-		m_World.SwitchPoint(Tile.x, Tile.y);
+		std::for_each(m_Layers.rbegin(), m_Layers.rend(), [&](const auto& Layer)
+		{
+			if (Type == ButtonEventType::Press)
+				Layer->OnMousePress(Button, CursorX, CursorY, m_World);
+			else if (Type == ButtonEventType::Release)
+				Layer->OnMouseRelease(Button, CursorX, CursorY, m_World);
+		});
 	});
 }

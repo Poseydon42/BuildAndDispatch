@@ -13,6 +13,9 @@ set(SOURCES
     Source/Core/Logger.cpp
     Source/Core/Logger.h
     Source/Core/Main.cpp
+    Source/Layer/TrackLayer.cpp
+    Source/Layer/TrackLayer.h
+    Source/Layer/Layer.h
     Source/Platform/File.h
     Source/Renderer/Buffer.cpp
     Source/Renderer/Buffer.h
@@ -24,9 +27,6 @@ set(SOURCES
     Source/Renderer/Window.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
-    Source/View/TrackView.cpp
-    Source/View/TrackView.h
-    Source/View/View.h
     Source/Windows/File.cpp
     Source/Windows/File.h
 )

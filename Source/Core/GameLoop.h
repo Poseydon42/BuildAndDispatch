@@ -3,8 +3,8 @@
 #include <glm/glm.hpp>
 #include <memory>
 
+#include "Layer/Layer.h"
 #include "Simulation/World.h"
-#include "View/View.h"
 
 class GameLoop
 {
@@ -19,7 +19,7 @@ private:
 
 	World m_World;
 
-	std::vector<std::unique_ptr<View>> m_Views;
+	std::vector<std::unique_ptr<Layer>> m_Layers;
 
 	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
 	float m_CameraScale = 1.0f;

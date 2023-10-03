@@ -1,18 +1,23 @@
-#include "TrackView.h"
+#include "TrackLayer.h"
 
 #include <algorithm>
 
-void TrackView::Render(Renderer& Renderer, const World& World) const
+void TrackLayer::OnMousePress(MouseButton Button, int32_t CursorX, int32_t CursorY, World& World) const
+{
+	World.SwitchPoint(3, 1);
+}
+
+void TrackLayer::Render(Renderer& Renderer, const World& World) const
 {
 	std::ranges::for_each(World.TrackTiles(), [&](const auto& TrackPiece) { RenderTrackTile(Renderer, World, TrackPiece); });
 	std::ranges::for_each(World.Signals(), [&](const auto& Signal) { RenderSignal(Renderer, Signal); });
 }
 
-void TrackView::RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const
+void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const
 {
-	auto Color = s_TrackColor;
+	auto Color = TrackLayer::s_TrackColor;
 	if (World.IsPoint(Tile.Tile.x, Tile.Tile.y))
-		Color = s_PointColor;
+		Color = TrackLayer::s_PointColor;
 
 	auto PossibleDirections = World.ListValidPathsInTile(Tile.Tile.x, Tile.Tile.y);
 	BD_ASSERT(Tile.SelectedDirectionIndex < PossibleDirections.size());
@@ -30,7 +35,7 @@ void TrackView::RenderTrackTile(Renderer& Renderer, const World& World, const Tr
 	});
 }
 
-void TrackView::RenderSignal(Renderer& Renderer, const Signal& Signal) const
+void TrackLayer::RenderSignal(Renderer& Renderer, const Signal& Signal) const
 {
 	static std::unordered_map<SignalState, glm::vec3> SignalColors =
 	{

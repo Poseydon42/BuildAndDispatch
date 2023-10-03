@@ -2,11 +2,13 @@
 
 #include <glm/glm.hpp>
 
-#include "View/View.h"
+#include "Layer/Layer.h"
 
-class TrackView : public View
+class TrackLayer : public Layer
 {
 public:
+	virtual void OnMousePress(MouseButton Button, int32_t CursorX, int32_t CursorY, World& World) const override;
+
 	virtual void Render(Renderer& Renderer, const World& World) const override;
 
 private:

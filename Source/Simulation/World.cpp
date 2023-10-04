@@ -99,8 +99,8 @@ void World::AddSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
 
 	BD_ASSERT(std::abs(FromX - ToX) <= 1 && std::abs(FromY - ToY) <= 1 && From != To);
 
-	auto ExistingSignal = std::ranges::find_if(m_Signals, [&](const Signal& Candidate) { return Candidate.From == From && Candidate.To == To; });
-	if (ExistingSignal != m_Signals.end())
+	const auto* ExistingSignal = FindSignal(FromX, FromY, ToX, ToY);
+	if (ExistingSignal)
 	{
 		BD_LOG_WARNING("Trying to add signal from tile ({}, {}) to tile ({}, {}), which already exists", FromX, FromY, ToX, ToY);
 		return;
@@ -131,6 +131,16 @@ void World::SwitchPoint(int32_t TileX, int32_t TileY)
 
 	auto NumberOfValidPositions = static_cast<uint32_t>(ListValidPathsInTile(TileX, TileY).size());
 	Tile->SelectedDirectionIndex = (Tile->SelectedDirectionIndex + 1) % NumberOfValidPositions;
+}
+
+void World::SwitchSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
+{
+	auto Signal = FindSignal(FromX, FromY, ToX, ToY);
+	if (!Signal)
+		return;
+
+	using SignalStateType = std::underlying_type_t<SignalState>;
+	Signal->State = static_cast<SignalState>((static_cast<SignalStateType>(Signal->State) + 1) % static_cast<SignalStateType>(SignalState::_Count));
 }
 
 std::span<const TrackTile> World::TrackTiles() const
@@ -178,4 +188,18 @@ TrackTile* World::FindTile(int32_t TileX, int32_t TileY)
 		return Candidate.Tile == glm::ivec2(TileX, TileY);
 	});
 	return (It == m_TrackTiles.end() ? nullptr : &*It);
+}
+
+const Signal* World::FindSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY) const
+{
+	return const_cast<World*>(this)->FindSignal(FromX, FromY, ToX, ToY);
+}
+
+Signal* World::FindSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
+{
+	auto It = std::ranges::find_if(m_Signals, [&](const Signal& Candidate)
+	{
+		return Candidate.From == glm::ivec2(FromX, FromY) && Candidate.To == glm::ivec2(ToX, ToY);
+	});
+	return (It == m_Signals.end() ? nullptr : &*It);
 }

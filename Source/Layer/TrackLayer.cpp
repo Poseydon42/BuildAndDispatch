@@ -4,7 +4,10 @@
 
 bool TrackLayer::OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const
 {
-	World.SwitchPoint(3, 1);
+	if (Button == MouseButton::Left)
+		World.SwitchPoint(3, 1);
+	else if (Button == MouseButton::Right)
+		World.SwitchSignal(-3, 1, -4, 0);
 	return true;
 }
 

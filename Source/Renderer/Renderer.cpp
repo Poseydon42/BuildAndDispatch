@@ -21,9 +21,15 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 		return nullptr;
 	}
 
-	auto DebugLineShader = Shader::Create("Resources/Shaders/DebugLine.vert", "Resources/Shaders/DebugLine.frag");
+	auto DebugLineGeometryBuffer = GeometryBuffer::Create(s_MaxDebugLineCount * 2, true);
+	if (!DebugLineGeometryBuffer)
+		return nullptr;
 
-	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(DebugLineShader)));
+	auto DebugLineShader = Shader::Create("Resources/Shaders/DebugLine.vert", "Resources/Shaders/DebugLine.frag");
+	if (!DebugLineShader)
+		return nullptr;
+
+	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(DebugLineGeometryBuffer), std::move(DebugLineShader)));
 }
 
 void Renderer::BeginFrame(glm::vec2 CameraLocation, float PixelsPerMeter)
@@ -43,46 +49,31 @@ void Renderer::BeginFrame(glm::vec2 CameraLocation, float PixelsPerMeter)
 
 	m_ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
-	m_NextDebugLinePtr = static_cast<DebugLineVertex*>(m_DebugLineVertexBuffer->Map(false, true));
-	m_DebugLineCount = 0;
+	m_DebugLineGeometryBuffer->Reset();
 }
 
 void Renderer::EndFrame()
 {
-	m_DebugLineVertexBuffer->Unmap();
+	m_DebugLineGeometryBuffer->Flush();
 
 	m_DebugLineShader->Bind();
 	m_DebugLineShader->SetUniform("u_ViewMatrix", m_ViewProjectionMatrix);
-	glBindVertexArray(m_DebugLineVAO);
-	glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_DebugLineCount * 2));
+
+	m_DebugLineGeometryBuffer->Bind();
+	glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_DebugLineGeometryBuffer->VertexCount()));
 
 	m_Window.SwapBuffers();
 }
 
 void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 {
-	if (m_DebugLineCount >= s_MaxDebugLineCount)
-		return;
-
-	*m_NextDebugLinePtr++ = { .Position = From, .Color = Color };
-	*m_NextDebugLinePtr++ = { .Position = To, .Color = Color };
-
-	m_DebugLineCount++;
+	m_DebugLineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });
+	m_DebugLineGeometryBuffer->AppendVertex({ .Position = To, .Color = Color });
 }
 
-Renderer::Renderer(Window& Window, std::unique_ptr<Shader> DebugLineShader)
+Renderer::Renderer(Window& Window, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)
 	: m_Window(Window)
-	, m_DebugLineVertexBuffer(Buffer::Create(s_DebugLineBufferSize, {}, GL_DYNAMIC_DRAW))
+	, m_DebugLineGeometryBuffer(std::move(DebugLineGeometryBuffer))
 	, m_DebugLineShader(std::move(DebugLineShader))
 {
-	glGenVertexArrays(1, &m_DebugLineVAO);
-	glBindVertexArray(m_DebugLineVAO);
-
-	m_DebugLineVertexBuffer->Bind(GL_ARRAY_BUFFER);
-
-	glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(DebugLineVertex), std::bit_cast<void*>(offsetof(DebugLineVertex, Position)));
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(DebugLineVertex), std::bit_cast<void*>(offsetof(DebugLineVertex, Color)));
-	glEnableVertexAttribArray(1);
 }

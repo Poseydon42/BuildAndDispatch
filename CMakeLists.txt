@@ -19,6 +19,8 @@ set(SOURCES
     Source/Platform/File.h
     Source/Renderer/Buffer.cpp
     Source/Renderer/Buffer.h
+    Source/Renderer/GeometryBuffer.cpp
+    Source/Renderer/GeometryBuffer.h
     Source/Renderer/Renderer.cpp
     Source/Renderer/Renderer.h
     Source/Renderer/Shader.cpp

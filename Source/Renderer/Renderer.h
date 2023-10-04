@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Renderer/Buffer.h"
+#include "Renderer/GeometryBuffer.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Window.h"
 
@@ -32,13 +32,9 @@ private:
 	};
 
 	static constexpr size_t s_MaxDebugLineCount = 4096;
-	static constexpr size_t s_DebugLineBufferSize = s_MaxDebugLineCount * 2 * sizeof(DebugLineVertex);
 
-	std::unique_ptr<Buffer> m_DebugLineVertexBuffer;
-	GLuint m_DebugLineVAO = -1;
-	DebugLineVertex* m_NextDebugLinePtr = nullptr;
-	size_t m_DebugLineCount = 0;
+	std::unique_ptr<GeometryBuffer> m_DebugLineGeometryBuffer;
 	std::unique_ptr<Shader> m_DebugLineShader;
 
-	Renderer(Window& Window, std::unique_ptr<Shader> DebugLineShader);
+	Renderer(Window& Window, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader);
 };

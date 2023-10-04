@@ -7,6 +7,8 @@
 class Buffer
 {
 public:
+	~Buffer();
+
 	static std::unique_ptr<Buffer> Create(size_t Size, std::optional<void*> Data, GLenum Usage);
 
 	void* Map(bool IsReading, bool IsWriting) const;
@@ -18,7 +20,7 @@ public:
 	size_t Size() const;
 
 private:
-	GLint m_Buffer;
+	GLuint m_Buffer;
 	size_t m_Size;
 
 	Buffer(GLuint Buffer, size_t Size);

@@ -1,5 +1,10 @@
 #include "Buffer.h"
 
+Buffer::~Buffer()
+{
+	glDeleteBuffers(1, &m_Buffer);
+}
+
 std::unique_ptr<Buffer> Buffer::Create(size_t Size, std::optional<void*> Data, GLenum Usage)
 {
 	GLuint Buffer;

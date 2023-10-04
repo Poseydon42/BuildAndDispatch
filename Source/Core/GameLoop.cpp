@@ -105,12 +105,18 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 
 	m_Window->AddMouseButtonCallback([this](MouseButton Button, ButtonEventType Type, int32_t CursorX, int32_t CursorY)
 	{
-		std::for_each(m_Layers.rbegin(), m_Layers.rend(), [&](const auto& Layer)
+		for (int32_t Index = static_cast<int32_t>(m_Layers.size()) - 1; Index >= 0; --Index)
 		{
+			const auto& Layer = m_Layers[Index];
+
+			bool EventWasHandled = false;
 			if (Type == ButtonEventType::Press)
-				Layer->OnMousePress(Button, CursorX, CursorY, m_World);
+				EventWasHandled = Layer->OnMousePress(Button, { CursorX, CursorY }, {}, m_World);
 			else if (Type == ButtonEventType::Release)
-				Layer->OnMouseRelease(Button, CursorX, CursorY, m_World);
-		});
+				EventWasHandled = Layer->OnMouseRelease(Button, { CursorX, CursorY }, {}, m_World);
+
+			if (EventWasHandled)
+				break;
+		}
 	});
 }

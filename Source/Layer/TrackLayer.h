@@ -7,7 +7,7 @@
 class TrackLayer : public Layer
 {
 public:
-	virtual void OnMousePress(MouseButton Button, int32_t CursorX, int32_t CursorY, World& World) const override;
+	virtual bool OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const override;
 
 	virtual void Render(Renderer& Renderer, const World& World) const override;
 

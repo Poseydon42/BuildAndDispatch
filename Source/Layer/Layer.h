@@ -8,9 +8,9 @@ class Layer
 public:
 	virtual ~Layer() = default;
 
-	virtual void OnMousePress(MouseButton Button, int32_t CursorX, int32_t CursorY, World& World) const {};
+	virtual bool OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const { return false; }
 
-	virtual void OnMouseRelease(MouseButton Button, int32_t CursorX, int32_t CursorY, World& World) const {};
+	virtual bool OnMouseRelease(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const { return false; }
 
 	virtual void Render(Renderer& Renderer, const World& World) const {};
 };

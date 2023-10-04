@@ -2,9 +2,10 @@
 
 #include <algorithm>
 
-void TrackLayer::OnMousePress(MouseButton Button, int32_t CursorX, int32_t CursorY, World& World) const
+bool TrackLayer::OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const
 {
 	World.SwitchPoint(3, 1);
+	return true;
 }
 
 void TrackLayer::Render(Renderer& Renderer, const World& World) const
@@ -15,9 +16,9 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 
 void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const
 {
-	auto Color = TrackLayer::s_TrackColor;
+	auto Color = s_TrackColor;
 	if (World.IsPoint(Tile.Tile.x, Tile.Tile.y))
-		Color = TrackLayer::s_PointColor;
+		Color = s_PointColor;
 
 	auto PossibleDirections = World.ListValidPathsInTile(Tile.Tile.x, Tile.Tile.y);
 	BD_ASSERT(Tile.SelectedDirectionIndex < PossibleDirections.size());

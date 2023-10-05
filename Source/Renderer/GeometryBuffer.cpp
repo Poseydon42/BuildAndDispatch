@@ -7,13 +7,27 @@ GeometryBuffer::~GeometryBuffer()
 	glDeleteVertexArrays(1, &m_VAO);
 }
 
-std::unique_ptr<GeometryBuffer> GeometryBuffer::Create(size_t VertexCount, bool IsDynamic)
+std::unique_ptr<GeometryBuffer> GeometryBuffer::Create(size_t VertexCount, bool IsDynamic, const std::optional<std::span<const Vertex>>& InitialContents)
 {
 	auto VertexBuffer = Buffer::Create(VertexCount * sizeof(Vertex), {}, IsDynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 	if (!VertexBuffer)
 		return nullptr;
 
-	return std::unique_ptr<GeometryBuffer>(new GeometryBuffer(std::move(VertexBuffer), IsDynamic));
+	BD_ASSERT(IsDynamic || InitialContents.has_value());
+
+	size_t InitialVertexCount = 0;
+	if (InitialContents.has_value())
+	{
+		BD_ASSERT(InitialContents->size() == VertexCount);
+
+		auto* Memory = VertexBuffer->Map(false, true);
+		memcpy(Memory, InitialContents->data(), InitialContents->size_bytes());
+		VertexBuffer->Unmap();
+
+		InitialVertexCount = InitialContents->size();
+	}
+
+	return std::unique_ptr<GeometryBuffer>(new GeometryBuffer(std::move(VertexBuffer), IsDynamic, InitialVertexCount));
 }
 
 void GeometryBuffer::AppendVertex(const Vertex& Vertex)
@@ -54,9 +68,10 @@ size_t GeometryBuffer::VertexCount() const
 	return m_VertexCount;
 }
 
-GeometryBuffer::GeometryBuffer(std::unique_ptr<Buffer> VertexBuffer, bool IsDynamic)
+GeometryBuffer::GeometryBuffer(std::unique_ptr<Buffer> VertexBuffer, bool IsDynamic, size_t InitialVertexCount)
 	: m_VertexBuffer(std::move(VertexBuffer))
 	, m_IsDynamic(IsDynamic)
+	, m_VertexCount(InitialVertexCount)
 {
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);

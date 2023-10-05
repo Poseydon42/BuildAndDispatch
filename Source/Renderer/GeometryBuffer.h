@@ -17,7 +17,7 @@ class GeometryBuffer
 public:
 	~GeometryBuffer();
 
-	static std::unique_ptr<GeometryBuffer> Create(size_t VertexCount, bool IsDynamic);
+	static std::unique_ptr<GeometryBuffer> Create(size_t VertexCount, bool IsDynamic, const std::optional<std::span<const Vertex>>& InitialContents = std::nullopt);
 
 	void AppendVertex(const Vertex& Vertex);
 
@@ -42,5 +42,5 @@ private:
 
 	size_t m_VertexCount = 0;
 
-	GeometryBuffer(std::unique_ptr<Buffer> VertexBuffer, bool IsDynamic);
+	GeometryBuffer(std::unique_ptr<Buffer> VertexBuffer, bool IsDynamic, size_t InitialVertexCount);
 };

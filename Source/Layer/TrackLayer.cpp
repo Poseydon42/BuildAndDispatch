@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+static constexpr float DefaultPixelsPerMeter = 64.0f;
+
 bool TrackLayer::OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const
 {
 	if (Button == MouseButton::Left)
@@ -13,6 +15,19 @@ bool TrackLayer::OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, gl
 
 void TrackLayer::Render(Renderer& Renderer, const World& World) const
 {
+	auto PixelsPerMeter = m_CameraScale * DefaultPixelsPerMeter;
+
+	auto ViewMatrix = glm::mat4(1.0f);
+	ViewMatrix = glm::scale(ViewMatrix, glm::vec3(PixelsPerMeter));
+	ViewMatrix = glm::translate(ViewMatrix, -glm::vec3(m_CameraLocation, 0.0f));
+
+	auto ProjectionMatrix = glm::mat4();
+	ProjectionMatrix[0][0] = 2.0f / Renderer.FramebufferSize().x;
+	ProjectionMatrix[1][1] = 2.0f / Renderer.FramebufferSize().y;
+	ProjectionMatrix[3][3] = 1.0f;
+
+	Renderer.SetViewProjectionMatrix(ProjectionMatrix * ViewMatrix);
+
 	std::ranges::for_each(World.TrackTiles(), [&](const auto& TrackPiece) { RenderTrackTile(Renderer, World, TrackPiece); });
 	std::ranges::for_each(World.Signals(), [&](const auto& Signal) { RenderSignal(Renderer, Signal); });
 }

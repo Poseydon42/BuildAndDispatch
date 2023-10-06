@@ -1,7 +1,6 @@
 #include "Renderer.h"
 
 #include <glad/glad.h>
-#include <glm/ext/matrix_transform.hpp>
 
 #include "Core/Logger.h"
 
@@ -32,22 +31,13 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(DebugLineGeometryBuffer), std::move(DebugLineShader)));
 }
 
-void Renderer::BeginFrame(glm::vec2 CameraLocation, float PixelsPerMeter)
+void Renderer::BeginFrame()
 {
 	glViewport(0, 0, m_Window.Width(), m_Window.Height());
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	auto ViewMatrix = glm::mat4(1.0f);
-	ViewMatrix = glm::scale(ViewMatrix, glm::vec3(PixelsPerMeter));
-	ViewMatrix = glm::translate(ViewMatrix, -glm::vec3(CameraLocation, 0.0f));
-
-	auto ProjectionMatrix = glm::mat4();
-	ProjectionMatrix[0][0] = 2.0f / m_Window.Width();
-	ProjectionMatrix[1][1] = 2.0f / m_Window.Height();
-	ProjectionMatrix[3][3] = 1.0f;
-
-	m_ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+	
+	m_ViewProjectionMatrix = glm::mat4(1.0f);
 
 	m_DebugLineGeometryBuffer->Reset();
 }
@@ -65,10 +55,20 @@ void Renderer::EndFrame()
 	m_Window.SwapBuffers();
 }
 
+void Renderer::SetViewProjectionMatrix(const glm::mat4& Matrix)
+{
+	m_ViewProjectionMatrix = Matrix;
+}
+
 void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 {
 	m_DebugLineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });
 	m_DebugLineGeometryBuffer->AppendVertex({ .Position = To, .Color = Color });
+}
+
+glm::vec2 Renderer::FramebufferSize() const
+{
+	return glm::vec2(m_Window.Width(), m_Window.Height());
 }
 
 Renderer::Renderer(Window& Window, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)

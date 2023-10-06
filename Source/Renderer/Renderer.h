@@ -11,11 +11,15 @@ class Renderer
 public:
 	static std::unique_ptr<Renderer> Create(Window& Window);
 	
-	void BeginFrame(glm::vec2 CameraLocation, float PixelsPerMeter);
+	void BeginFrame();
 
 	void EndFrame();
 
+	void SetViewProjectionMatrix(const glm::mat4& Matrix);
+
 	void Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color);
+
+	glm::vec2 FramebufferSize() const;
 
 private:
 	Window& m_Window;

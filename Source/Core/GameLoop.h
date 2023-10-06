@@ -21,8 +21,5 @@ private:
 
 	std::vector<std::unique_ptr<Layer>> m_Layers;
 
-	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
-	float m_CameraScale = 1.0f;
-
 	GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Renderer);
 };

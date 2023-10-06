@@ -9,8 +9,6 @@ static constexpr uint32_t WindowWidth = 1280;
 static constexpr uint32_t WindowHeight = 720;
 static constexpr const char* WindowName = "Build & Dispatch";
 
-static constexpr float DefaultPixelsPerMeter = 64.0f;
-
 static void GenerateDebugWorld(World& World)
 {
 	World.AddTrack(-5, 0, -4, 0);
@@ -77,12 +75,7 @@ int GameLoop::Run()
 	{
 		m_Window->PollEvents();
 
-		if (m_Window->IsMouseButtonPressed(MouseButton::Left))
-			m_CameraLocation += glm::vec2(m_Window->GetCursorDelta()) * -glm::vec2(1.0f, -1.0f) / (m_CameraScale * DefaultPixelsPerMeter);
-		m_CameraScale = std::min(std::max(0.2f, m_CameraScale + m_Window->GetMouseWheelDelta() * 0.2f), 4.0f);
-
-		auto PixelsPerMeter = m_CameraScale * DefaultPixelsPerMeter;
-		m_Renderer->BeginFrame(m_CameraLocation, PixelsPerMeter);
+		m_Renderer->BeginFrame();
 
 		for (const auto& Layer : m_Layers)
 		{

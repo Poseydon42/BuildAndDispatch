@@ -15,6 +15,9 @@ private:
 	static constexpr glm::vec3 s_PointColor = { 0.97f, 0.97f, 0.97f };
 	static constexpr glm::vec3 s_TrackColor = { 0.4f, 0.4f, 0.4f };
 
+	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
+	float m_CameraScale = 1.0f;
+
 	void RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const;
 
 	void RenderSignal(Renderer& Renderer, const Signal& Signal) const;

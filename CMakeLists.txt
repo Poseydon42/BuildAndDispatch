@@ -25,6 +25,8 @@ set(SOURCES
     Source/Renderer/Renderer.h
     Source/Renderer/Shader.cpp
     Source/Renderer/Shader.h
+    Source/Renderer/VectorIcon.cpp
+    Source/Renderer/VectorIcon.h
     Source/Renderer/Window.cpp
     Source/Renderer/Window.h
     Source/Simulation/World.cpp

@@ -50,6 +50,20 @@ static void GenerateDebugWorld(World& World)
 	World.AddSignal(4, -1, 5, 0);
 }
 
+template<typename FuncType>
+void DispatchEventForEachLayer(const std::vector<std::unique_ptr<Layer>>& Layers, FuncType&& Func)
+{
+	for (int32_t Index = static_cast<int32_t>(Layers.size()) - 1; Index >= 0; --Index)
+	{
+		const auto& Layer = Layers[Index];
+
+		bool EventWasHandled = Func(*Layer);
+
+		if (EventWasHandled)
+			break;
+	}
+}
+
 std::unique_ptr<GameLoop> GameLoop::Create()
 {
 	auto Window = Window::Create(WindowWidth, WindowHeight, WindowName);
@@ -74,6 +88,13 @@ int GameLoop::Run()
 	while (!m_Window->ShouldClose())
 	{
 		m_Window->PollEvents();
+		UpdateInputState();
+
+		for (size_t Index = m_Layers.size(); Index > 0; Index--)
+		{
+			const auto& Layer = m_Layers[Index - 1];
+			Layer->Update(0.0f, m_InputState, m_World); // FIXME: add delta time
+		}
 
 		m_Renderer->BeginFrame();
 
@@ -96,20 +117,28 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 
 	GenerateDebugWorld(m_World);
 
-	m_Window->AddMouseButtonCallback([this](MouseButton Button, ButtonEventType Type, int32_t CursorX, int32_t CursorY)
+	m_Window->AddMouseButtonCallback([this](MouseButton::Button Button, ButtonEventType::Type Type, int32_t CursorX, int32_t CursorY)
 	{
-		for (int32_t Index = static_cast<int32_t>(m_Layers.size()) - 1; Index >= 0; --Index)
-		{
-			const auto& Layer = m_Layers[Index];
-
-			bool EventWasHandled = false;
-			if (Type == ButtonEventType::Press)
-				EventWasHandled = Layer->OnMousePress(Button, { CursorX, CursorY }, {}, m_World);
-			else if (Type == ButtonEventType::Release)
-				EventWasHandled = Layer->OnMouseRelease(Button, { CursorX, CursorY }, {}, m_World);
-
-			if (EventWasHandled)
-				break;
-		}
+		if (Type == ButtonEventType::Press)
+			DispatchEventForEachLayer(m_Layers, [&](Layer& Layer) { return Layer.OnMousePress(Button, m_InputState, m_World); });
+		if (Type == ButtonEventType::Release)
+			DispatchEventForEachLayer(m_Layers, [&](Layer& Layer) { return Layer.OnMouseRelease(Button, m_InputState, m_World); });
 	});
+
+	m_Window->AddMouseScrollCallback([this](int32_t Offset)
+	{
+		DispatchEventForEachLayer(m_Layers, [&](Layer& Layer) { return Layer.OnMouseScroll(Offset, m_InputState, m_World); });
+	});
+}
+
+void GameLoop::UpdateInputState()
+{
+	m_InputState.MousePosition = m_Window->GetCursorPosition();
+	m_InputState.MousePositionDelta = m_Window->GetCursorDelta();
+
+	for (auto Button = 0; Button < MouseButton::Count_; ++Button)
+	{
+		auto ButtonState = m_Window->IsMouseButtonPressed(static_cast<MouseButton::Button>(Button));
+		m_InputState.MouseButtonStates[Button] = ButtonState;
+	}
 }

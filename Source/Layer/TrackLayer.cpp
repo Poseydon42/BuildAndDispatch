@@ -4,7 +4,7 @@
 
 static constexpr float DefaultPixelsPerMeter = 64.0f;
 
-bool TrackLayer::OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const
+bool TrackLayer::OnMousePress(MouseButton::Button Button, const InputState&, World& World)
 {
 	if (Button == MouseButton::Left)
 		World.SwitchPoint(3, 1);
@@ -13,12 +13,23 @@ bool TrackLayer::OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, gl
 	return true;
 }
 
+bool TrackLayer::OnMouseScroll(int32_t Offset, const InputState&, World&)
+{
+	m_CameraScale = glm::min(glm::max(m_CameraScale + Offset * 0.2f, 0.5f), 4.0f);
+
+	return true;
+}
+
+void TrackLayer::Update(float DeltaTime, const InputState& InputState, World& World)
+{
+	if (InputState.MouseButtonStates[MouseButton::Right])
+		m_CameraLocation += glm::vec2(InputState.MousePositionDelta) * glm::vec2(-1.0f, 1.0f) / PixelsPerMeter();
+}
+
 void TrackLayer::Render(Renderer& Renderer, const World& World) const
 {
-	auto PixelsPerMeter = m_CameraScale * DefaultPixelsPerMeter;
-
 	auto ViewMatrix = glm::mat4(1.0f);
-	ViewMatrix = glm::scale(ViewMatrix, glm::vec3(PixelsPerMeter));
+	ViewMatrix = glm::scale(ViewMatrix, glm::vec3(PixelsPerMeter()));
 	ViewMatrix = glm::translate(ViewMatrix, -glm::vec3(m_CameraLocation, 0.0f));
 
 	auto ProjectionMatrix = glm::mat4();
@@ -30,6 +41,11 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 
 	std::ranges::for_each(World.TrackTiles(), [&](const auto& TrackPiece) { RenderTrackTile(Renderer, World, TrackPiece); });
 	std::ranges::for_each(World.Signals(), [&](const auto& Signal) { RenderSignal(Renderer, Signal); });
+}
+
+float TrackLayer::PixelsPerMeter() const
+{
+	return m_CameraScale * DefaultPixelsPerMeter;
 }
 
 void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const

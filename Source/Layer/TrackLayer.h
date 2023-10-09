@@ -7,7 +7,11 @@
 class TrackLayer : public Layer
 {
 public:
-	virtual bool OnMousePress(MouseButton Button, glm::ivec2 ScreenCursorPos, glm::vec2 WorldCursorPos, World& World) const override;
+	virtual bool OnMousePress(MouseButton::Button Button, const InputState& InputState, World& World) override;
+
+	virtual bool OnMouseScroll(int32_t Offset, const InputState& InputState, World& World) override;
+
+	virtual void Update(float DeltaTime, const InputState& InputState, World& World) override;
 
 	virtual void Render(Renderer& Renderer, const World& World) const override;
 
@@ -17,6 +21,8 @@ private:
 
 	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
 	float m_CameraScale = 1.0f;
+
+	float PixelsPerMeter() const;
 
 	void RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const;
 

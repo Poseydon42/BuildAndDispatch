@@ -2,7 +2,7 @@
 
 #include "Core/Assert.h"
 
-static MouseButton MouseButtonFromGLFWCode(int Button)
+static MouseButton::Button MouseButtonFromGLFWCode(int Button)
 {
 	switch (Button)
 	{
@@ -17,7 +17,7 @@ static MouseButton MouseButtonFromGLFWCode(int Button)
 	}
 }
 
-static int MouseButtonToGLFWCode(MouseButton Button)
+static int MouseButtonToGLFWCode(MouseButton::Button Button)
 {
 	switch (Button)
 	{
@@ -126,7 +126,12 @@ void Window::AddMouseButtonCallback(std::function<MouseButtonCallbackType>&& Cal
 	m_MouseButtonCallbacks.push_back(std::move(Callback));
 }
 
-bool Window::IsMouseButtonPressed(MouseButton Button) const
+void Window::AddMouseScrollCallback(std::function<MouseScrollCallbackType>&& Callback)
+{
+	m_MouseScrollCallbacks.push_back(std::move(Callback));
+}
+
+bool Window::IsMouseButtonPressed(MouseButton::Button Button) const
 {
 	return glfwGetMouseButton(m_Window, MouseButtonToGLFWCode(Button)) == GLFW_PRESS;
 }
@@ -175,5 +180,9 @@ void Window::MouseButtonCallback(int GLFWButton, int GLFWAction)
 
 void Window::ScrollCallback(double YOffset)
 {
-	m_MouseWheelDelta += static_cast<int32_t>(YOffset);
+	auto Offset = static_cast<int32_t>(YOffset);
+	m_MouseWheelDelta += Offset;
+
+	for (const auto& Callback : m_MouseScrollCallbacks)
+		Callback(Offset);
 }

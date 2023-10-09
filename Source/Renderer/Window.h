@@ -8,18 +8,7 @@
 #include <string_view>
 #include <glm/vec2.hpp>
 
-enum class MouseButton
-{
-	Left,
-	Right,
-	Middle,
-};
-
-enum class ButtonEventType
-{
-	Press,
-	Release,
-};
+#include "Core/InputState.h"
 
 class Window
 {
@@ -39,10 +28,13 @@ public:
 
 	bool ShouldClose() const;
 
-	using MouseButtonCallbackType = void(MouseButton, ButtonEventType, int32_t, int32_t);
+	using MouseButtonCallbackType = void(MouseButton::Button, ButtonEventType::Type, int32_t, int32_t);
 	void AddMouseButtonCallback(std::function<MouseButtonCallbackType>&& Callback);
 
-	bool IsMouseButtonPressed(MouseButton Button) const;
+	bool IsMouseButtonPressed(MouseButton::Button Button) const;
+
+	using MouseScrollCallbackType = void(int32_t);
+	void AddMouseScrollCallback(std::function<MouseScrollCallbackType>&& Callback);
 
 	glm::ivec2 GetCursorPosition() const;
 	glm::ivec2 GetCursorDelta() const;
@@ -57,6 +49,7 @@ private:
 	int32_t m_MouseWheelDelta = 0;
 
 	std::vector<std::function<MouseButtonCallbackType>> m_MouseButtonCallbacks;
+	std::vector<std::function<MouseScrollCallbackType>> m_MouseScrollCallbacks;
 
 	static constexpr int s_GLVersionMajor = 4;
 	static constexpr int s_GLVersionMinor = 2;

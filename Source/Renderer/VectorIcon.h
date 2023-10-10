@@ -11,10 +11,17 @@ class VectorIcon
 public:
 	const GeometryBuffer& GeometryBuffer() const;
 
+	glm::vec2 MinCorner() const;
+	glm::vec2 MaxCorner() const;
+
+	bool IsPointInside(glm::vec2 Point, const glm::mat4& TransformationMatrix) const;
+
 private:
 	std::unique_ptr<class GeometryBuffer> m_GeometryBuffer;
 
-	explicit VectorIcon(std::unique_ptr<class GeometryBuffer> GeometryBuffer);
+	std::vector<glm::vec2> m_Vertices;
+
+	VectorIcon(std::vector<glm::vec2> Vertices, std::unique_ptr<class GeometryBuffer> GeometryBuffer);
 
 	friend class VectorIconBuilder;
 };

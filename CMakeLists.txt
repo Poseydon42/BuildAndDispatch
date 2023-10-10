@@ -14,6 +14,7 @@ set(SOURCES
     Source/Core/Logger.cpp
     Source/Core/Logger.h
     Source/Core/Main.cpp
+    Source/Core/Transform.h
     Source/Layer/TrackLayer.cpp
     Source/Layer/TrackLayer.h
     Source/Layer/Layer.h

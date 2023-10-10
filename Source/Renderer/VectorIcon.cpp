@@ -56,14 +56,27 @@ void VectorIconBuilder::AddCircle(glm::vec2 Center, float Radius, glm::vec4 Colo
 		float LeftRadiusAngle = DeltaAngle * SectorIndex;
 		float RightRadiusAngle = DeltaAngle * (SectorIndex + 1);
 
-		Vertex CenterVertex = { .Position = Center, .Color = Color };
-		Vertex LeftVertex = { .Position = Center + Radius * glm::vec2(glm::cos(LeftRadiusAngle), glm::sin(LeftRadiusAngle)), .Color = Color };
-		Vertex RightVertex = { .Position = Center + Radius * glm::vec2(glm::cos(RightRadiusAngle), glm::sin(RightRadiusAngle)), .Color = Color };
+		auto V1 = Center;
+		auto V2 = Center + Radius * glm::vec2(glm::cos(LeftRadiusAngle), glm::sin(LeftRadiusAngle));
+		auto V3 = Center + Radius * glm::vec2(glm::cos(RightRadiusAngle), glm::sin(RightRadiusAngle));
 
-		m_Vertices.push_back(CenterVertex);
-		m_Vertices.push_back(LeftVertex);
-		m_Vertices.push_back(RightVertex);
+		AddTriangle(V1, V2, V3, Color);
 	}
+}
+
+void VectorIconBuilder::AddLine(glm::vec2 From, glm::vec2 To, float Thickness, glm::vec4 Color)
+{
+	auto Direction = To - From;
+	auto Perpendicular = glm::normalize(glm::vec2(-Direction.y, Direction.x));
+	auto HalfThickness = 0.5f * Thickness;
+
+	auto V1 = From + Perpendicular * HalfThickness;
+	auto V2 = From - Perpendicular * HalfThickness;
+	auto V3 = To + Perpendicular * HalfThickness;
+	auto V4 = To - Perpendicular * HalfThickness;
+
+	AddTriangle(V1, V2, V3, Color);
+	AddTriangle(V2, V4, V3, Color);
 }
 
 std::unique_ptr<VectorIcon> VectorIconBuilder::Build() const
@@ -75,4 +88,11 @@ std::unique_ptr<VectorIcon> VectorIconBuilder::Build() const
 	std::vector<glm::vec2> Vertices(m_Vertices.size());
 	std::ranges::transform(m_Vertices, Vertices.begin(), [](const Vertex& Vertex) { return Vertex.Position; });
 	return std::unique_ptr<VectorIcon>(new VectorIcon(Vertices, std::move(GeometryBuffer)));
+}
+
+void VectorIconBuilder::AddTriangle(glm::vec2 V1, glm::vec2 V2, glm::vec2 V3, glm::vec4 Color)
+{
+	m_Vertices.emplace_back(V1, Color);
+	m_Vertices.emplace_back(V2, Color);
+	m_Vertices.emplace_back(V3, Color);
 }

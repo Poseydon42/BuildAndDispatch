@@ -20,6 +20,10 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 		return nullptr;
 	}
 
+	auto VectorIconShader = Shader::Create("Resources/Shaders/VectorIcon.vert", "Resources/Shaders/VectorIcon.frag");
+	if (!VectorIconShader)
+		return nullptr;
+
 	auto DebugLineGeometryBuffer = GeometryBuffer::Create(s_MaxDebugLineCount * 2, true);
 	if (!DebugLineGeometryBuffer)
 		return nullptr;
@@ -28,7 +32,7 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 	if (!DebugLineShader)
 		return nullptr;
 
-	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(DebugLineGeometryBuffer), std::move(DebugLineShader)));
+	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(VectorIconShader), std::move(DebugLineGeometryBuffer), std::move(DebugLineShader)));
 }
 
 void Renderer::BeginFrame()
@@ -60,6 +64,17 @@ void Renderer::SetViewProjectionMatrix(const glm::mat4& Matrix)
 	m_ViewProjectionMatrix = Matrix;
 }
 
+void Renderer::Draw(const VectorIcon& Icon, const glm::mat4& TransformationMatrix)
+{
+	auto MVP = m_ViewProjectionMatrix * TransformationMatrix;
+
+	m_VectorIconShader->Bind();
+	m_VectorIconShader->SetUniform("u_MVP", MVP);
+
+	Icon.GeometryBuffer().Bind();
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(Icon.GeometryBuffer().VertexCount()));
+}
+
 void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 {
 	m_DebugLineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });
@@ -68,11 +83,12 @@ void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 
 glm::vec2 Renderer::FramebufferSize() const
 {
-	return glm::vec2(m_Window.Width(), m_Window.Height());
+	return { m_Window.Width(), m_Window.Height() };
 }
 
-Renderer::Renderer(Window& Window, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)
+Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)
 	: m_Window(Window)
+	, m_VectorIconShader(std::move(VectorIconShader))
 	, m_DebugLineGeometryBuffer(std::move(DebugLineGeometryBuffer))
 	, m_DebugLineShader(std::move(DebugLineShader))
 {

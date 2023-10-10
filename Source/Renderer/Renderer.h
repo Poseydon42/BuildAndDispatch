@@ -4,6 +4,7 @@
 
 #include "Renderer/GeometryBuffer.h"
 #include "Renderer/Shader.h"
+#include "Renderer/VectorIcon.h"
 #include "Renderer/Window.h"
 
 class Renderer
@@ -17,6 +18,8 @@ public:
 
 	void SetViewProjectionMatrix(const glm::mat4& Matrix);
 
+	void Draw(const VectorIcon& Icon, const glm::mat4& TransformationMatrix);
+
 	void Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color);
 
 	glm::vec2 FramebufferSize() const;
@@ -25,6 +28,11 @@ private:
 	Window& m_Window;
 
 	glm::mat4 m_ViewProjectionMatrix = {};
+
+	/***************************************
+	 ********* VECTOR ICON DRAWING *********
+	 ***************************************/
+	std::unique_ptr<Shader> m_VectorIconShader;
 
 	/**************************************
 	 ********* DEBUG LINE DRAWING *********
@@ -40,5 +48,5 @@ private:
 	std::unique_ptr<GeometryBuffer> m_DebugLineGeometryBuffer;
 	std::unique_ptr<Shader> m_DebugLineShader;
 
-	Renderer(Window& Window, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader);
+	Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader);
 };

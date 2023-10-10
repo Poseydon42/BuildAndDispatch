@@ -11,8 +11,3 @@ inline glm::mat4 TransformationMatrix(glm::vec2 Translation = { 0.0f, 0.0f }, fl
 	TransformationMatrix = glm::scale(TransformationMatrix, glm::vec3(Scale, 1.0f));
 	return TransformationMatrix;
 }
-
-inline glm::mat4 TransformationMatrix(glm::vec2 Translation = { 0.0f, 0.0f }, float Rotation = 0.0f, float Scale = 1.0f)
-{
-	return TransformationMatrix(Translation, Rotation, glm::vec2(Scale));
-}

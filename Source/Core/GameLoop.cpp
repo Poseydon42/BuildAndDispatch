@@ -133,6 +133,8 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 
 void GameLoop::UpdateInputState()
 {
+	m_InputState.MousePositionBoundaries = { m_Window->Width(), m_Window->Height() };
+
 	m_InputState.MousePosition = m_Window->GetCursorPosition();
 	m_InputState.MousePositionDelta = m_Window->GetCursorDelta();
 

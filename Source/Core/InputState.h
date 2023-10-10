@@ -24,6 +24,8 @@ namespace ButtonEventType
 
 struct InputState
 {
+	glm::ivec2 MousePositionBoundaries = {};
+
 	glm::ivec2 MousePosition = {};
 	glm::ivec2 MousePositionDelta = {};
 	

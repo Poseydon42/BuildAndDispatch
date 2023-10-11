@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "Renderer/GeometryBuffer.h"
@@ -9,6 +10,10 @@
 class VectorIcon
 {
 public:
+	static std::unique_ptr<VectorIcon> CreateFromString(std::string_view String);
+
+	static std::unique_ptr<VectorIcon> LoadFromFile(std::string_view Path);
+
 	const GeometryBuffer& GeometryBuffer() const;
 
 	bool IsPointInside(glm::vec2 Point, const glm::mat4& TransformationMatrix) const;

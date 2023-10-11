@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <glm/gtc/constants.hpp>
+#include <nlohmann/json.hpp>
 
 #include "Core/Assert.h"
+#include "Platform/File.h"
 
 static float Sign(glm::vec2 P, glm::vec2 A, glm::vec2 B)
 {
@@ -17,6 +19,215 @@ static bool IsInsideTriangle(glm::vec2 Point, glm::vec2 V1, glm::vec2 V2, glm::v
 	float S3 = Sign(Point, V3, V1);
 
 	return (S1 > 0.0f && S2 > 0.0f && S3 > 0.0f) || (S1 < 0.0f && S2 < 0.0f && S3 < 0.0f);
+}
+
+static std::optional<float> ParseNumber(std::string_view Name, const nlohmann::json& Parent)
+{
+	if (!Parent.contains(Name) || !Parent[Name].is_number())
+		return std::nullopt;
+
+	return Parent[Name];
+}
+
+template<unsigned Size>
+requires (Size >= 2 && Size <= 4)
+static std::optional<glm::vec<Size, float>> ParseVector(std::string_view Name, const nlohmann::json& Parent)
+{
+	if (!Parent.contains(Name))
+		return std::nullopt;
+
+	const auto& Array = Parent[Name];
+	if (!Array.is_array() || Array.size() != Size)
+		return std::nullopt;
+
+	std::array<float, Size> Result = {};
+	for (size_t Index = 0; Index < Size; Index++)
+	{
+		const auto& Value = Array[Index];
+		if (!Value.is_number())
+			return std::nullopt;
+
+		Result[Index] = Value;
+	}
+
+	if constexpr (Size == 2)
+		return glm::vec2(Result[0], Result[1]);
+	else if constexpr (Size == 3)
+		return glm::vec3(Result[0], Result[1], Result[2]);
+	else if constexpr (Size == 4)
+		return glm::vec4(Result[0], Result[1], Result[2], Result[3]);
+	else
+		return std::nullopt;
+}
+
+static bool ParseCircle(const nlohmann::json& Node, VectorIconBuilder& Builder)
+{
+	BD_ASSERT(Node.contains("type") && Node["type"].is_string() && Node["type"] == "circle");
+
+	auto MaybeCenter = ParseVector<2>("center", Node);
+	if (!MaybeCenter.has_value())
+	{
+		BD_LOG_ERROR("Failed to parse circle node: no valid center provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+	auto Center = MaybeCenter.value();
+
+	auto MaybeRadius = ParseNumber("radius", Node);
+	if (!MaybeRadius.has_value())
+	{
+		BD_LOG_ERROR("Failed to parse circle node: no valid radius provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+	auto Radius = MaybeRadius.value();
+
+	glm::vec4 Color = {};
+	auto MaybeColorWithAlpha = ParseVector<4>("color", Node);
+	if (MaybeColorWithAlpha.has_value())
+	{
+		Color = MaybeColorWithAlpha.value();
+	}
+	else
+	{
+		auto MaybeColorWithoutAlpha = ParseVector<3>("color", Node);
+		if (MaybeColorWithoutAlpha.has_value())
+		{
+			Color = { MaybeColorWithoutAlpha.value(), 1.0f };
+		}
+		else
+		{
+			BD_LOG_ERROR("Failed to parse circle node: no valid color provided");
+			BD_LOG_INFO("JSON string: \n{}", Node.dump());
+			return false;
+		}
+	}
+
+	Builder.AddCircle(Center, Radius, Color);
+	return true;
+}
+
+static bool ParseLine(const nlohmann::json& Node, VectorIconBuilder& Builder)
+{
+	BD_ASSERT(Node.contains("type") && Node["type"].is_string() && Node["type"] == "line");
+
+	auto MaybeFrom = ParseVector<2>("from", Node);
+	if (!MaybeFrom.has_value())
+	{
+		BD_LOG_ERROR("Failed to parse line node: no valid starting point provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+	auto From = MaybeFrom.value();
+
+	auto MaybeTo = ParseVector<2>("to", Node);
+	if (!MaybeTo.has_value())
+	{
+		BD_LOG_ERROR("Failed to parse line node: no valid ending point provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+	auto To = MaybeTo.value();
+
+	auto MaybeThickness = ParseNumber("thickness", Node);
+	if (!MaybeThickness.has_value())
+	{
+		BD_LOG_ERROR("Failed to parse line node: no valid thickness provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+	auto Thickness = MaybeThickness.value();
+
+	glm::vec4 Color = {};
+	auto MaybeColorWithAlpha = ParseVector<4>("color", Node);
+	if (MaybeColorWithAlpha.has_value())
+	{
+		Color = MaybeColorWithAlpha.value();
+	}
+	else
+	{
+		auto MaybeColorWithoutAlpha = ParseVector<3>("color", Node);
+		if (MaybeColorWithoutAlpha.has_value())
+		{
+			Color = { MaybeColorWithoutAlpha.value(), 1.0f };
+		}
+		else
+		{
+			BD_LOG_ERROR("Failed to parse line node: no valid color provided");
+			BD_LOG_INFO("JSON string: \n{}", Node.dump());
+			return false;
+		}
+	}
+
+	Builder.AddLine(From, To, Thickness, Color);
+	return true;
+}
+
+static bool ParseNode(const nlohmann::json& Node, VectorIconBuilder& Builder)
+{
+	using namespace nlohmann;
+	if (Node.type() != detail::value_t::object)
+	{
+		BD_LOG_ERROR("Failed to parse node description: not an object");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+
+	if (!Node.contains("type") || Node["type"].type() != detail::value_t::string)
+	{
+		BD_LOG_ERROR("Failed to parse node description: no node type provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+
+	auto Type = Node["type"].get<std::string>();
+	if (Type == "circle")
+	{
+		return ParseCircle(Node, Builder);
+	}
+	else if (Type == "line")
+	{
+		return ParseLine(Node, Builder);
+	}
+	else
+	{
+		BD_LOG_ERROR("Failed to parse node description: unknown node type '{}'", Type);
+		return false;
+	}
+}
+
+std::unique_ptr<VectorIcon> VectorIcon::CreateFromString(std::string_view String)
+{
+	using namespace nlohmann;
+
+	auto Root = json::parse(String);
+	if (!Root.contains("nodes") || Root["nodes"].type() != detail::value_t::array)
+	{
+		BD_LOG_ERROR("Failed to create VectorIcon from string: no nodes array");
+		BD_LOG_DEBUG("JSON string: \n{}", String);
+		return nullptr;
+	}
+
+	VectorIconBuilder Builder;
+
+	const auto& Nodes = Root["nodes"];
+	for (const auto& Node : Nodes)
+	{
+		if (!ParseNode(Node, Builder))
+			return nullptr;
+	}
+
+	return Builder.Build();
+}
+
+std::unique_ptr<VectorIcon> VectorIcon::LoadFromFile(std::string_view Path)
+{
+	auto MaybeContents = FileSystem::ReadFileAsString(Path);
+	if (!MaybeContents.has_value())
+		return nullptr;
+
+	auto String = MaybeContents.value();
+	return CreateFromString(String);
 }
 
 const GeometryBuffer& VectorIcon::GeometryBuffer() const

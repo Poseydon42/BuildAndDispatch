@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 add_subdirectory(ThirdParty/glad)
 add_subdirectory(ThirdParty/glfw)
 add_subdirectory(ThirdParty/glm)
+add_subdirectory(ThirdParty/json)
 
 project(BuildAndDispatch CXX)
 
@@ -41,6 +42,7 @@ set(LIBRARIES
     glad
     glfw
     glm
+    nlohmann_json
 )
 
 set(TARGET_NAME BuildAndDispatch)

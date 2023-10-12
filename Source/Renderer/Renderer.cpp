@@ -92,4 +92,5 @@ Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std
 	, m_DebugLineGeometryBuffer(std::move(DebugLineGeometryBuffer))
 	, m_DebugLineShader(std::move(DebugLineShader))
 {
+	glEnable(GL_MULTISAMPLE);
 }

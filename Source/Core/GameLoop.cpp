@@ -66,7 +66,7 @@ void DispatchEventForEachLayer(const std::vector<std::unique_ptr<Layer>>& Layers
 
 std::unique_ptr<GameLoop> GameLoop::Create()
 {
-	auto Window = Window::Create(WindowWidth, WindowHeight, WindowName);
+	auto Window = Window::Create(WindowWidth, WindowHeight, WindowName, 16);
 	if (!Window)
 	{
 		BD_LOG_ERROR("Could not create game window");

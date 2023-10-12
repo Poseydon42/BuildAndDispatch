@@ -15,7 +15,7 @@ class Window
 public:
 	~Window();
 
-	static std::unique_ptr<Window> Create(unsigned Width, unsigned Height, std::string_view Name);
+	static std::unique_ptr<Window> Create(unsigned Width, unsigned Height, std::string_view Name, unsigned Samples);
 
 	uint32_t Width() const;
 	uint32_t Height() const;

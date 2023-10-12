@@ -54,7 +54,7 @@ Window::~Window()
 	}
 }
 
-std::unique_ptr<Window> Window::Create(unsigned Width, unsigned Height, std::string_view Name)
+std::unique_ptr<Window> Window::Create(unsigned Width, unsigned Height, std::string_view Name, unsigned Samples)
 {
 	if (!s_IsGLFWInitialized)
 	{
@@ -68,6 +68,7 @@ std::unique_ptr<Window> Window::Create(unsigned Width, unsigned Height, std::str
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, s_GLVersionMajor);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, s_GLVersionMinor);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, Samples);
 
 	auto* GLFWWindow = glfwCreateWindow(Width, Height, Name.data(), nullptr, nullptr);
 	if (!GLFWWindow)

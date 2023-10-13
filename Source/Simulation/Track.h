@@ -24,7 +24,7 @@ struct TrackTile
 	glm::ivec2 Tile;
 
 	TrackDirection ConnectedDirections = TrackDirection::None;
-	uint32_t SelectedDirectionIndex = 0;
+	uint32_t SelectedPath = 0;
 };
 
 constexpr bool operator!(TrackDirection Value)

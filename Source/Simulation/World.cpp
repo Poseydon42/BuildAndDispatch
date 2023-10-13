@@ -84,7 +84,7 @@ void World::SwitchPoint(int32_t TileX, int32_t TileY)
 		return;
 
 	auto NumberOfValidPositions = static_cast<uint32_t>(ListValidPathsInTile(TileX, TileY).size());
-	Tile->SelectedDirectionIndex = (Tile->SelectedDirectionIndex + 1) % NumberOfValidPositions;
+	Tile->SelectedPath = (Tile->SelectedPath + 1) % NumberOfValidPositions;
 }
 
 void World::SwitchSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)

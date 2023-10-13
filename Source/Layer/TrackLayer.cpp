@@ -128,9 +128,9 @@ void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const T
 	if (World.IsPoint(Tile.Tile.x, Tile.Tile.y))
 		Color = s_PointColor;
 
-	auto PossibleDirections = World.ListValidPathsInTile(Tile.Tile.x, Tile.Tile.y);
-	BD_ASSERT(Tile.SelectedDirectionIndex < PossibleDirections.size());
-	auto ActiveDirection = PossibleDirections[Tile.SelectedDirectionIndex];
+	auto PossiblePaths = World.ListValidPathsInTile(Tile.Tile.x, Tile.Tile.y);
+	BD_ASSERT(Tile.SelectedPath < PossiblePaths.size());
+	auto ActiveDirection = PossiblePaths[Tile.SelectedPath];
 
 	ForEachExistingDirection(Tile.ConnectedDirections, [&](TrackDirection Direction)
 	{

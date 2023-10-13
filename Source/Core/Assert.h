@@ -6,7 +6,7 @@
 
 namespace AssertInternal
 {
-	[[noreturn]] inline void NoReturnAssertDummy()
+	[[noreturn]] constexpr void NoReturnAssertDummy()
 	{
 		*static_cast<volatile uint8_t*>(nullptr) = 0;
 		while (true);

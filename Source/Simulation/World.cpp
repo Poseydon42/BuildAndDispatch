@@ -5,52 +5,6 @@
 
 #include "Core/Assert.h"
 
-TrackDirection TrackDirectionFromVector(glm::ivec2 Direction)
-{
-	if (Direction == glm::ivec2(0, 1))
-		return TrackDirection::N;
-	if (Direction == glm::ivec2(1, 1))
-		return TrackDirection::NE;
-	if (Direction == glm::ivec2(1, 0))
-		return TrackDirection::E;
-	if (Direction == glm::ivec2(1, -1))
-		return TrackDirection::SE;
-	if (Direction == glm::ivec2(0, -1))
-		return TrackDirection::S;
-	if (Direction == glm::ivec2(-1, -1))
-		return TrackDirection::SW;
-	if (Direction == glm::ivec2(-1, 0))
-		return TrackDirection::W;
-	if (Direction == glm::ivec2(-1, 1))
-		return TrackDirection::NW;
-	BD_UNREACHABLE();
-}
-
-glm::ivec2 TrackDirectionToVector(TrackDirection Direction)
-{
-	switch (Direction)
-	{
-	case TrackDirection::N:
-		return { 0, 1 };
-	case TrackDirection::NE:
-		return { 1, 1 };
-	case TrackDirection::E:
-		return { 1, 0};
-	case TrackDirection::SE:
-		return { 1, -1 };
-	case TrackDirection::S:
-		return { 0, -1 };
-	case TrackDirection::SW:
-		return { -1, -1 };
-	case TrackDirection::W:
-		return { -1, 0 };
-	case TrackDirection::NW:
-		return { -1, 1 };
-	default:
-		BD_UNREACHABLE();
-	}
-}
-
 static bool IsValidTurn(TrackDirection From, TrackDirection To)
 {
 	auto V1 = TrackDirectionToVector(From);

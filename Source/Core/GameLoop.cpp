@@ -113,7 +113,7 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 	: m_Window(std::move(Window))
 	, m_Renderer(std::move(Renderer))
 {
-	m_Layers.push_back(std::make_unique<TrackLayer>());
+	m_Layers.push_back(TrackLayer::Create());
 
 	GenerateDebugWorld(m_World);
 

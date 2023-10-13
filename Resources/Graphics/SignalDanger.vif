@@ -1,0 +1,43 @@
+{
+    "views": [ "danger", "clear" ],
+    "nodes": [
+        {
+            "type": "line",
+            "from": [ 0.15, -0.2 ],
+            "to": [ 0.15, 0.15 ],
+            "thickness": 0.04,
+            "color": [ 0.8, 0.8, 0.8 ]
+        },
+        {
+            "type": "line",
+            "from": [ 0.03, -0.2 ],
+            "to": [ 0.28, -0.2 ],
+            "thickness": 0.04,
+            "color": [ 0.8, 0.8, 0.8 ]
+        },
+        {
+            "type": "circle",
+            "center": [ 0.15, 0.15 ],
+            "radius": 0.13,
+            "color": [ 0.8, 0.8, 0.8 ]
+        },
+        {
+            "type": "circle",
+            "center": [ 0.15, 0.34 ],
+            "radius": 0.13,
+            "color": [ 0.8, 0.8, 0.8 ]
+        },
+        {
+            "type": "circle",
+            "center": [ 0.15, 0.15 ],
+            "radius": 0.085,
+            "color": [ 0.05, 0.05, 0.05 ]
+        },
+        {
+            "type": "circle",
+            "center": [ 0.15, 0.34 ],
+            "radius": 0.085,
+            "color": [ 1.0, 0.0, 0.0 ]
+        }
+    ]
+}

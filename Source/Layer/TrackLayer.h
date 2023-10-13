@@ -7,6 +7,8 @@
 class TrackLayer : public Layer
 {
 public:
+	static std::unique_ptr<TrackLayer> Create();
+
 	virtual bool OnMousePress(MouseButton::Button Button, const InputState& InputState, World& World) override;
 
 	virtual bool OnMouseScroll(int32_t Offset, const InputState& InputState, World& World) override;
@@ -22,9 +24,17 @@ private:
 	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
 	float m_CameraScale = 1.0f;
 
+	std::unordered_map<SignalState, std::unique_ptr<VectorIcon>> m_SignalIcons;
+
+	TrackLayer() = default;
+
 	float PixelsPerMeter() const;
 
 	void RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const;
 
 	void RenderSignal(Renderer& Renderer, const Signal& Signal) const;
+
+	glm::vec2 CursorPositionToWorldCoordinates(glm::ivec2 CursorPosition, glm::ivec2 CursorAreaBoundaries) const;
+
+	glm::ivec2 WorldPositionToTileCoordinates(glm::vec2 WorldPosition) const;
 };

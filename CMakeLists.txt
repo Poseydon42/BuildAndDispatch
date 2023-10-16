@@ -20,6 +20,7 @@ set(SOURCES
     Source/Layer/TrackLayer.h
     Source/Layer/Layer.h
     Source/Platform/File.h
+    Source/Platform/Time.h
     Source/Renderer/Buffer.cpp
     Source/Renderer/Buffer.h
     Source/Renderer/GeometryBuffer.cpp
@@ -36,6 +37,7 @@ set(SOURCES
     Source/Simulation/Track.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
+    Source/Windows/Time.cpp
     Source/Windows/File.cpp
     Source/Windows/File.h
 )

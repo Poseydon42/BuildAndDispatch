@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <glm/gtc/constants.hpp>
 #include <glm/vec2.hpp>
 #include <type_traits>
 
@@ -40,6 +41,11 @@ constexpr TrackDirection operator|(TrackDirection Lhs, TrackDirection Rhs)
 constexpr TrackDirection operator&(TrackDirection Lhs, TrackDirection Rhs)
 {
 	return static_cast<TrackDirection>(static_cast<std::underlying_type_t<TrackDirection>>(Lhs) & static_cast<std::underlying_type_t<TrackDirection>>(Rhs));
+}
+
+constexpr TrackDirection operator~(TrackDirection Lhs)
+{
+	return static_cast<TrackDirection>(~static_cast<std::underlying_type_t<TrackDirection>>(Lhs));
 }
 
 template<typename FunctorType>
@@ -107,6 +113,75 @@ constexpr glm::ivec2 TrackDirectionToVector(TrackDirection Direction)
 	default:
 		BD_UNREACHABLE();
 	}
+}
+
+static constexpr const char* TrackDirectionToString(TrackDirection Direction)
+{
+	switch (Direction)
+	{
+	case TrackDirection::N:
+		return "N";
+	case TrackDirection::NE:
+		return "NE";
+	case TrackDirection::E:
+		return "E";
+	case TrackDirection::SE:
+		return "SE";
+	case TrackDirection::S:
+		return "S";
+	case TrackDirection::SW:
+		return "SW";
+	case TrackDirection::W:
+		return "W";
+	case TrackDirection::NW:
+		return "NW";
+	default:
+		BD_UNREACHABLE();
+	}
+}
+
+constexpr TrackDirection OppositeDirection(TrackDirection Direction)
+{
+	switch (Direction)
+	{
+	case TrackDirection::N:
+		return TrackDirection::S;
+	case TrackDirection::NE:
+		return TrackDirection::SW;
+	case TrackDirection::E:
+		return TrackDirection::W;
+	case TrackDirection::SE:
+		return TrackDirection::NW;
+	case TrackDirection::S:
+		return TrackDirection::N;
+	case TrackDirection::SW:
+		return TrackDirection::NE;
+	case TrackDirection::W:
+		return TrackDirection::E;
+	case TrackDirection::NW:
+		return TrackDirection::SE;
+	default:
+		BD_ASSERT(false);
+	}
+}
+
+constexpr float HalfTileLengthInDirection(TrackDirection Direction)
+{
+	switch (Direction)
+	{
+	case TrackDirection::N:
+	case TrackDirection::E:
+	case TrackDirection::S:
+	case TrackDirection::W:
+		return 0.5f;
+	case TrackDirection::NE:
+	case TrackDirection::SE:
+	case TrackDirection::SW:
+	case TrackDirection::NW:
+		return 0.5f * glm::root_two<float>();
+	default:
+		BD_UNREACHABLE();
+	};
 }
 
 constexpr bool IsDeadEnd(TrackDirection Direction)

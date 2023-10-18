@@ -4,6 +4,7 @@
 
 #include "Core/Logger.h"
 #include "Layer/TrackLayer.h"
+#include "Platform/Time.h"
 
 static constexpr uint32_t WindowWidth = 1280;
 static constexpr uint32_t WindowHeight = 720;
@@ -104,6 +105,8 @@ int GameLoop::Run()
 		}
 
 		m_Renderer->EndFrame();
+
+		Time::Sleep(1); // NOTE: this is here just so that we don't get 10k+ FPS and break the world simulation
 	}
 
 	return 0;

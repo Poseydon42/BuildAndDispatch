@@ -152,9 +152,6 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 	// In m/s
 	constexpr float TrainSpeed = 2.0f;
 	float DistanceToTravel = TrainSpeed * DeltaTime;
-
-	static int UpdateCount = 0;
-	UpdateCount++;
 	
 	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);
 	BD_ASSERT(CurrentTile);
@@ -224,12 +221,18 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 		if (std::abs(Train.OffsetInTile - 1.0f) < Epsilon)
 		{
 			auto NewTileCoords = Train.Tile + TrackDirectionToVector(Train.Direction);
-			CurrentTile = FindTile(NewTileCoords.x, NewTileCoords.y);
+			const auto* NewTile = FindTile(NewTileCoords.x, NewTileCoords.y);
 
 			// Reached a dead end
-			if (!CurrentTile)
+			if (!NewTile)
 				break;
-			
+
+			// Check if there is a red signal ahead
+			const auto* Signal = FindSignal(CurrentTile->Tile.x, CurrentTile->Tile.y, NewTile->Tile.x, NewTile->Tile.y);
+			if (Signal && !CanTrainPassSignal(Signal->State))
+				break;
+
+			CurrentTile = NewTile;
 			Train.Tile = NewTileCoords;
 			Train.OffsetInTile = -1.0f;
 		}

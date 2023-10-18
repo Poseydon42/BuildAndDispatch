@@ -16,3 +16,8 @@ struct Signal
 
 	SignalState State = SignalState::Danger;
 };
+
+constexpr bool CanTrainPassSignal(SignalState Signal)
+{
+	return Signal == SignalState::Clear;
+}

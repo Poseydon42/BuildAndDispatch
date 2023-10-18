@@ -45,6 +45,14 @@ struct TrackTile
 		return m_State[StateArrayIndex(Direction)];
 	}
 
+	constexpr bool HasAny(TrackState State) const
+	{
+		return this->State(TrackDirection::N) == State || this->State(TrackDirection::NE) == State ||
+			   this->State(TrackDirection::E) == State || this->State(TrackDirection::SE) == State ||
+			   this->State(TrackDirection::S) == State || this->State(TrackDirection::SW) == State ||
+			   this->State(TrackDirection::W) == State || this->State(TrackDirection::NW) == State;
+	}
+
 	constexpr void SetState(TrackDirection Direction, TrackState State)
 	{
 		m_State[StateArrayIndex(Direction)] = State;

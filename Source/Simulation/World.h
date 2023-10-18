@@ -38,6 +38,8 @@ private:
 
 	void UpdateTrain(Train& Train, float DeltaTime);
 
+	void FloodFillOccupiedTrack(TrackTile* InitialTile, TrackDirection InitialTileSegment);
+
 	void AddTrackInSingleDirection(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 
 	const TrackTile* FindTile(int32_t TileX, int32_t TileY) const;

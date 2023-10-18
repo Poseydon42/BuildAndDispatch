@@ -1,6 +1,7 @@
 #include "World.h"
 
 #include <algorithm>
+#include <stack>
 #include <glm/ext.hpp>
 
 #include "Core/Assert.h"
@@ -252,7 +253,51 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 	if (Tile)
 	{
 		auto CurrentDirectionInTile = (Train.OffsetInTile < 0.0f ? OppositeDirection(Train.Direction) : Train.Direction);
-		Tile->SetState(CurrentDirectionInTile, TrackState::Occupied);
+		FloodFillOccupiedTrack(Tile, CurrentDirectionInTile);
+	}
+}
+
+void World::FloodFillOccupiedTrack(TrackTile* InitialTile, TrackDirection InitialTileSegment)
+{
+	std::stack<std::pair<TrackTile*, TrackDirection>> FillStack;
+	FillStack.emplace(InitialTile, InitialTileSegment);
+
+	int RepeatCount = 0;
+	while (!FillStack.empty() && RepeatCount++ < 1000)
+	{
+		auto [Tile, Direction] = FillStack.top();
+		FillStack.pop();
+
+		// Do not process the tile if it already has at least one occupied segment - otherwise
+		// we'll run into an endless loop here
+		if (Tile->HasAny(TrackState::Occupied))
+			continue;
+
+		// The direction we start with is always occupied
+		Tile->SetState(Direction, TrackState::Occupied);
+
+		// If the current direction is not a part of active path we are done with this tile
+		auto ActivePath = ListValidPathsInTile(Tile->Tile.x, Tile->Tile.y)[Tile->SelectedPath];
+		if (!(ActivePath & Direction))
+			continue;
+
+		// Otherwise, go over the two directions in the active path
+		ForEachExistingDirection(ActivePath, [&](TrackDirection ExistingDirection)
+		{
+			Tile->SetState(ExistingDirection, TrackState::Occupied);
+
+			glm::ivec2 NeighborTileCoordinates = Tile->Tile + TrackDirectionToVector(ExistingDirection);
+			auto* NeighborTile = FindTile(NeighborTileCoordinates.x, NeighborTileCoordinates.y);
+
+			// If there is a tile in the currently processed direction and no signal between these tiles (we have
+			// to check in both directions), add it to the queue
+			if (NeighborTile
+				&& FindSignal(Tile->Tile.x, Tile->Tile.y, NeighborTile->Tile.x, NeighborTile->Tile.y) == nullptr
+				&& FindSignal(NeighborTile->Tile.x, NeighborTile->Tile.y, Tile->Tile.x, Tile->Tile.y) == nullptr)
+			{
+				FillStack.emplace(NeighborTile, OppositeDirection(ExistingDirection));
+			}
+		});
 	}
 }
 

@@ -35,6 +35,7 @@ set(SOURCES
     Source/Renderer/Window.h
     Source/Simulation/Signal.h
     Source/Simulation/Track.h
+    Source/Simulation/Train.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
     Source/Windows/Time.cpp

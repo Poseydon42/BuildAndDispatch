@@ -18,15 +18,13 @@ public:
 	virtual void Render(Renderer& Renderer, const World& World) const override;
 
 private:
-	static constexpr glm::vec3 s_PointColor = { 0.97f, 0.97f, 0.97f };
-	static constexpr glm::vec3 s_TrackColor = { 0.4f, 0.4f, 0.4f };
-
 	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
 	float m_CameraScale = 1.0f;
 
+	std::unordered_map<TrackState, glm::vec3> m_TrackColors;
 	std::unordered_map<SignalState, std::unique_ptr<VectorIcon>> m_SignalIcons;
 
-	TrackLayer() = default;
+	TrackLayer();
 
 	float PixelsPerMeter() const;
 

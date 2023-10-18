@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include <cstdint>
 #include <glm/gtc/constants.hpp>
 #include <glm/vec2.hpp>
@@ -20,12 +21,45 @@ enum class TrackDirection : uint8_t
 	NW = 128,
 };
 
+enum class TrackState
+{
+	Free,
+	Occupied,
+};
+
 struct TrackTile
 {
 	glm::ivec2 Tile;
 
 	TrackDirection ConnectedDirections = TrackDirection::None;
 	uint32_t SelectedPath = 0;
+
+	constexpr TrackTile(glm::ivec2 InTile, TrackDirection InConnectedDirections)
+		: Tile(InTile)
+		, ConnectedDirections(InConnectedDirections)
+	{
+	}
+
+	constexpr TrackState State(TrackDirection Direction) const
+	{
+		return m_State[StateArrayIndex(Direction)];
+	}
+
+	constexpr void SetState(TrackDirection Direction, TrackState State)
+	{
+		m_State[StateArrayIndex(Direction)] = State;
+	}
+
+private:
+	TrackState m_State[8] = { TrackState::Free };
+
+	static constexpr size_t StateArrayIndex(TrackDirection Direction)
+	{
+		auto DirectionAsByte = std::to_underlying(Direction);
+		BD_ASSERT(std::has_single_bit(DirectionAsByte));
+		auto Index = std::countr_zero(DirectionAsByte);
+		return Index;
+	}
 };
 
 constexpr bool operator!(TrackDirection Value)

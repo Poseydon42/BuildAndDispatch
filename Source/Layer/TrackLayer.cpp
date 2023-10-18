@@ -120,6 +120,12 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 	std::ranges::for_each(World.Trains(), [&](const auto& Train) { RenderTrain(Renderer, Train); });
 }
 
+TrackLayer::TrackLayer()
+{
+	m_TrackColors[TrackState::Free] = { 0.4f, 0.4f, 0.4f };
+	m_TrackColors[TrackState::Occupied] = { 1.0f, 0.0f, 0.1f };
+}
+
 float TrackLayer::PixelsPerMeter() const
 {
 	return m_CameraScale * DefaultPixelsPerMeter;
@@ -127,10 +133,6 @@ float TrackLayer::PixelsPerMeter() const
 
 void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const
 {
-	auto Color = s_TrackColor;
-	if (World.IsPoint(Tile.Tile.x, Tile.Tile.y))
-		Color = s_PointColor;
-
 	auto PossiblePaths = World.ListValidPathsInTile(Tile.Tile.x, Tile.Tile.y);
 	BD_ASSERT(Tile.SelectedPath < PossiblePaths.size());
 	auto ActiveDirection = PossiblePaths[Tile.SelectedPath];
@@ -142,6 +144,10 @@ void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const T
 
 		if (!(Direction & ActiveDirection))
 			From = 0.5f * (From + To);
+
+		auto State = Tile.State(Direction);
+		BD_ASSERT(m_TrackColors.contains(State));
+		auto Color = m_TrackColors.at(State);
 
 		Renderer.Debug_PushLine(From, To, Color);
 	});

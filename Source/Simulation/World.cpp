@@ -101,6 +101,15 @@ void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction)
 
 void World::Update(float DeltaTime)
 {
+	// Reset the state of all tracks to free
+	std::ranges::for_each(m_TrackTiles, [](auto& Tile)
+	{
+		ForEachExistingDirection(Tile.ConnectedDirections, [&Tile](TrackDirection Direction)
+		{
+			Tile.SetState(Direction, TrackState::Free);
+		});
+	});
+
 	std::ranges::for_each(m_Trains, [&](auto& Train) { UpdateTrain(Train, DeltaTime); });
 }
 
@@ -152,7 +161,7 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 	// In m/s
 	constexpr float TrainSpeed = 2.0f;
 	float DistanceToTravel = TrainSpeed * DeltaTime;
-	
+
 	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);
 	BD_ASSERT(CurrentTile);
 	while (CurrentTile && DistanceToTravel > 0.001f)
@@ -236,6 +245,14 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 			Train.Tile = NewTileCoords;
 			Train.OffsetInTile = -1.0f;
 		}
+	}
+
+	// Set the state of the track the train is currently at to occupied
+	auto* Tile = FindTile(Train.Tile.x, Train.Tile.y);
+	if (Tile)
+	{
+		auto CurrentDirectionInTile = (Train.OffsetInTile < 0.0f ? OppositeDirection(Train.Direction) : Train.Direction);
+		Tile->SetState(CurrentDirectionInTile, TrackState::Occupied);
 	}
 }
 

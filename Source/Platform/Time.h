@@ -7,4 +7,6 @@ namespace Time
 	Point Now();
 
 	float Duration(Point Start, Point End);
+
+	void Sleep(uint32_t Millis);
 }

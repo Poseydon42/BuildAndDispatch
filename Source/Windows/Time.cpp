@@ -32,4 +32,9 @@ namespace Time
 		BD_ASSERT(WindowsTime::GInitialized);
 		return static_cast<float>(End - Start) / static_cast<float>(WindowsTime::GFrequency.QuadPart);
 	}
+
+	void Sleep(uint32_t Millis)
+	{
+		::Sleep(Millis);
+	}
 }

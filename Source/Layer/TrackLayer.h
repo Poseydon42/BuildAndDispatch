@@ -34,6 +34,8 @@ private:
 
 	void RenderSignal(Renderer& Renderer, const Signal& Signal) const;
 
+	void RenderTrain(Renderer& Renderer, const Train& Train) const;
+
 	glm::vec2 CursorPositionToWorldCoordinates(glm::ivec2 CursorPosition, glm::ivec2 CursorAreaBoundaries) const;
 
 	glm::ivec2 WorldPositionToTileCoordinates(glm::vec2 WorldPosition) const;

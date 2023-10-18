@@ -115,6 +115,9 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 
 	std::ranges::for_each(World.TrackTiles(), [&](const auto& TrackPiece) { RenderTrackTile(Renderer, World, TrackPiece); });
 	std::ranges::for_each(World.Signals(), [&](const auto& Signal) { RenderSignal(Renderer, Signal); });
+
+	// FIXME: this should only be done in debug mode
+	std::ranges::for_each(World.Trains(), [&](const auto& Train) { RenderTrain(Renderer, Train); });
 }
 
 float TrackLayer::PixelsPerMeter() const
@@ -150,6 +153,24 @@ void TrackLayer::RenderSignal(Renderer& Renderer, const Signal& Signal) const
 	const auto& Icon = *m_SignalIcons.at(Signal.State);
 
 	Renderer.Draw(Icon, TransformationMatrixForSignal(Signal));
+}
+
+void TrackLayer::RenderTrain(Renderer& Renderer, const Train& Train) const
+{
+	constexpr float DebugTrainHalfSize = 0.06f;
+	constexpr glm::vec3 DebugTrainColor = { 0.0f, 0.0f, 1.0f };
+
+	auto TrainLocation = glm::vec2(Train.Tile) + 0.5f * glm::vec2(TrackDirectionToVector(Train.Direction)) * Train.OffsetInTile;
+
+	auto V1 = TrainLocation + glm::vec2(DebugTrainHalfSize, DebugTrainHalfSize);
+	auto V2 = TrainLocation + glm::vec2(DebugTrainHalfSize, -DebugTrainHalfSize);
+	auto V3 = TrainLocation + glm::vec2(-DebugTrainHalfSize, -DebugTrainHalfSize);
+	auto V4 = TrainLocation + glm::vec2(-DebugTrainHalfSize, DebugTrainHalfSize);
+
+	Renderer.Debug_PushLine(V1, V2, DebugTrainColor);
+	Renderer.Debug_PushLine(V2, V3, DebugTrainColor);
+	Renderer.Debug_PushLine(V3, V4, DebugTrainColor);
+	Renderer.Debug_PushLine(V4, V1, DebugTrainColor);
 }
 
 glm::vec2 TrackLayer::CursorPositionToWorldCoordinates(glm::ivec2 CursorPosition, glm::ivec2 CursorAreaBoundaries) const

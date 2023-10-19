@@ -50,14 +50,14 @@ static void GenerateDebugWorld(World& World)
 	World.AddTrack(3, 1, 4, 0);
 	World.AddTrack(4, -1, 5, 0);
 
-	World.AddSignal(-5, 0, -4, 0);
-	World.AddSignal(-1, 0, 0, 0);
-	World.AddSignal(-3, 1, -4, 0);
-	World.AddSignal(3, 0, 4, 0);
-	World.AddSignal(-2, -1, -3, 0);
-	World.AddSignal(2, 1, 3, 1);
-	World.AddSignal(4, -1, 5, 0);
-	World.AddSignal(7, 0, 6, 0);
+	World.AddSignal({ { -5, 0 }, { -4, 0 } });
+	World.AddSignal({ { -1, 0 },{ 0, 0 } });
+	World.AddSignal({ { -3, 1 }, { -4, 0 } });
+	World.AddSignal({ { 3, 0 },{ 4, 0 } });
+	World.AddSignal({ { -2, -1 }, { -3, 0 } });
+	World.AddSignal({ { 2, 1 },{ 3, 1 } });
+	World.AddSignal({ { 4, -1 },{ 5, 0 } });
+	World.AddSignal({ { 7, 0 },{ 6, 0} });
 
 	World.SpawnTrain(-6, 0, TrackDirection::E);
 	World.SpawnTrain(8, 0, TrackDirection::W);

@@ -13,7 +13,7 @@ class World
 public:
 	void AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 
-	void AddSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
+	void AddSignal(SignalLocation Location);
 
 	void SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction);
 
@@ -25,7 +25,7 @@ public:
 
 	void SwitchPoint(int32_t TileX, int32_t TileY);
 
-	void SwitchSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
+	void SwitchSignal(SignalLocation Location);
 
 	std::span<const TrackTile> TrackTiles() const;
 	std::span<const Signal> Signals() const;
@@ -45,6 +45,6 @@ private:
 	const TrackTile* FindTile(int32_t TileX, int32_t TileY) const;
 	TrackTile* FindTile(int32_t TileX, int32_t TileY);
 
-	const Signal* FindSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY) const;
-	Signal* FindSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
+	const Signal* FindSignal(SignalLocation Location) const;
+	Signal* FindSignal(SignalLocation Location);
 };

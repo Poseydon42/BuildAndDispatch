@@ -9,10 +9,20 @@ enum class SignalState
 	_Count
 };
 
+struct SignalLocation
+{
+	glm::ivec2 FromTile = {};
+	glm::ivec2 ToTile = {};
+
+	constexpr bool operator==(const SignalLocation& Rhs)
+	{
+		return FromTile == Rhs.FromTile && ToTile == Rhs.ToTile;
+	}
+};
+
 struct Signal
 {
-	glm::ivec2 From;
-	glm::ivec2 To;
+	SignalLocation Location = {};
 
 	SignalState State = SignalState::Danger;
 };

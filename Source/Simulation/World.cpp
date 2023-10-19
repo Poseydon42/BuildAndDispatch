@@ -47,24 +47,23 @@ void World::AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
 	AddTrackInSingleDirection(ToX, ToY, FromX, FromY);
 }
 
-void World::AddSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
+void World::AddSignal(SignalLocation Location)
 {
-	glm::ivec2 From = { FromX, FromY };
-	glm::ivec2 To = { ToX, ToY };
+	BD_ASSERT(std::abs(Location.FromTile.x - Location.ToTile.x) <= 1
+	       && std::abs(Location.FromTile.y - Location.ToTile.y) <= 1 
+	       && Location.FromTile != Location.ToTile);
 
-	BD_ASSERT(std::abs(FromX - ToX) <= 1 && std::abs(FromY - ToY) <= 1 && From != To);
-
-	const auto* ExistingSignal = FindSignal(FromX, FromY, ToX, ToY);
+	const auto* ExistingSignal = FindSignal(Location);
 	if (ExistingSignal)
 	{
-		BD_LOG_WARNING("Trying to add signal from tile ({}, {}) to tile ({}, {}), which already exists", FromX, FromY, ToX, ToY);
+		BD_LOG_WARNING("Trying to add signal from tile ({}, {}) to tile ({}, {}), which already exists",
+			Location.FromTile.x, Location.ToTile.x, Location.FromTile.y, Location.ToTile.y);
 		return;
 	}
 
 	Signal NewSignal =
 	{
-		.From = From,
-		.To = To,
+		.Location = Location,
 		.State = SignalState::Danger
 	};
 	m_Signals.push_back(NewSignal);
@@ -132,9 +131,9 @@ void World::SwitchPoint(int32_t TileX, int32_t TileY)
 	Tile->SelectedPath = (Tile->SelectedPath + 1) % NumberOfValidPositions;
 }
 
-void World::SwitchSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
+void World::SwitchSignal(SignalLocation Location)
 {
-	auto Signal = FindSignal(FromX, FromY, ToX, ToY);
+	auto Signal = FindSignal(Location);
 	if (!Signal)
 		return;
 
@@ -238,7 +237,7 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 				break;
 
 			// Check if there is a red signal ahead
-			const auto* Signal = FindSignal(CurrentTile->Tile.x, CurrentTile->Tile.y, NewTile->Tile.x, NewTile->Tile.y);
+			const auto* Signal = FindSignal({ .FromTile = CurrentTile->Tile, .ToTile = NewTile->Tile });
 			if (Signal && !CanTrainPassSignal(Signal->State))
 				break;
 
@@ -292,8 +291,8 @@ void World::FloodFillOccupiedTrack(TrackTile* InitialTile, TrackDirection Initia
 			// If there is a tile in the currently processed direction and no signal between these tiles (we have
 			// to check in both directions), add it to the queue
 			if (NeighborTile
-				&& FindSignal(Tile->Tile.x, Tile->Tile.y, NeighborTile->Tile.x, NeighborTile->Tile.y) == nullptr
-				&& FindSignal(NeighborTile->Tile.x, NeighborTile->Tile.y, Tile->Tile.x, Tile->Tile.y) == nullptr)
+				&& FindSignal({ .FromTile = Tile->Tile, .ToTile = NeighborTile->Tile }) == nullptr
+				&& FindSignal({ .FromTile = NeighborTile->Tile, .ToTile = Tile->Tile }) == nullptr)
 			{
 				FillStack.emplace(NeighborTile, OppositeDirection(ExistingDirection));
 			}
@@ -338,16 +337,16 @@ TrackTile* World::FindTile(int32_t TileX, int32_t TileY)
 	return (It == m_TrackTiles.end() ? nullptr : &*It);
 }
 
-const Signal* World::FindSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY) const
+const Signal* World::FindSignal(SignalLocation Location) const
 {
-	return const_cast<World*>(this)->FindSignal(FromX, FromY, ToX, ToY);
+	return const_cast<World*>(this)->FindSignal(Location);
 }
 
-Signal* World::FindSignal(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
+Signal* World::FindSignal(SignalLocation Location)
 {
 	auto It = std::ranges::find_if(m_Signals, [&](const Signal& Candidate)
 	{
-		return Candidate.From == glm::ivec2(FromX, FromY) && Candidate.To == glm::ivec2(ToX, ToY);
+		return Candidate.Location == Location;
 	});
 	return (It == m_Signals.end() ? nullptr : &*It);
 }

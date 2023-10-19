@@ -37,9 +37,9 @@ static float AngleFromDirection(TrackDirection Direction)
 
 static glm::mat4 TransformationMatrixForSignal(const Signal& Signal)
 {
-	auto Direction = TrackDirectionFromVector(Signal.To - Signal.From);
+	auto Direction = TrackDirectionFromVector(Signal.Location.ToTile - Signal.Location.FromTile);
 	auto Angle = AngleFromDirection(Direction);
-	auto Position = 0.5f * glm::vec2(Signal.From + Signal.To);
+	auto Position = 0.5f * glm::vec2(Signal.Location.FromTile + Signal.Location.ToTile);
 
 	return TransformationMatrix(Position, Angle);
 }
@@ -72,7 +72,7 @@ bool TrackLayer::OnMousePress(MouseButton::Button Button, const InputState& Inpu
 		{
 			if (m_SignalIcons.begin()->second->IsPointInside(WorldPos, TransformationMatrixForSignal(Signal)))
 			{
-				World.SwitchSignal(Signal.From.x, Signal.From.y, Signal.To.x, Signal.To.y);
+				World.SwitchSignal(Signal.Location);
 				return true;
 			}
 		}

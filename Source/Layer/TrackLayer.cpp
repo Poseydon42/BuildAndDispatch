@@ -152,7 +152,10 @@ void TrackLayer::HandleSignalClick(World& World, const Signal& Signal)
 			for (auto Tile : MaybeRoute->Tiles)
 				BD_LOG_DEBUG("\t({},{})", Tile.x, Tile.y);
 
-			World.TryOpenRoute(*MaybeRoute);
+			if (!World.TryOpenRoute(*MaybeRoute))
+				BD_LOG_DEBUG("Route from ({},{}) to ({},{}) is available, but cannot be cleared",
+					m_RouteStartSignalLocation->FromTile.x, m_RouteStartSignalLocation->FromTile.y,
+					Signal.Location.FromTile.x, Signal.Location.FromTile.y);
 		}
 
 		m_RouteStartSignalLocation = std::nullopt;

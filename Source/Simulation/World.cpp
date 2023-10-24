@@ -204,8 +204,21 @@ std::optional<Route> World::TryCreateRoute(SignalLocation From, SignalLocation T
 
 bool World::TryOpenRoute(const Route& Route)
 {
-	// FIXME: check if the route is valid and clear of other trains
+	// Checking the route is clear
+	for (size_t Index = 0; Index < Route.Tiles.size() - 1; ++Index)
+	{
+		auto* From = FindTile(Route.Tiles[Index].x, Route.Tiles[Index].y);
+		auto* To = FindTile(Route.Tiles[Index + 1].x, Route.Tiles[Index + 1].y);
+		BD_ASSERT(From && To);
 
+		auto Direction = TrackDirectionFromVector(To->Tile - From->Tile);
+
+		// NOTE: we don't check the state of the first tile in the route because it might be occupied by a train stopped right in front of a signal
+		if ((From->State(Direction) != TrackState::Free && Index > 0) || To->State(OppositeDirection(Direction)) != TrackState::Free)
+			return false;
+	}
+
+	// Opening the route
 	for (size_t Index = 0; Index < Route.Tiles.size() - 1; ++Index)
 	{
 		auto* From = FindTile(Route.Tiles[Index].x, Route.Tiles[Index].y);
@@ -232,9 +245,17 @@ bool World::TryOpenRoute(const Route& Route)
 		}
 
 		auto Direction = TrackDirectionFromVector(To->Tile - From->Tile);
-		From->SetState(Direction, TrackState::Reserved);
+
+		// NOTE: do not reserve the little piece of track before the signal
+		if (Index != 0)
+			From->SetState(Direction, TrackState::Reserved);
 		To->SetState(OppositeDirection(Direction), TrackState::Reserved);
 	}
+
+	// NOTE: we need to set the state of the piece of track right before the destination signal to reserved
+	auto DestinationSignalLocation = Route.To;
+	auto* LastTile = FindTile(DestinationSignalLocation.FromTile.x, DestinationSignalLocation.FromTile.y);
+	LastTile->SetState(TrackDirectionFromVector(DestinationSignalLocation.ToTile - DestinationSignalLocation.FromTile), TrackState::Reserved);
 
 	auto* StartSignal = FindSignal(Route.From);
 	BD_ASSERT(StartSignal);

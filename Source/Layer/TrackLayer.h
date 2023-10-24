@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <optional>
 
 #include "Layer/Layer.h"
 
@@ -21,12 +22,16 @@ private:
 	glm::vec2 m_CameraLocation = { 0.0f, 0.0f };
 	float m_CameraScale = 1.0f;
 
+	std::optional<SignalLocation> m_RouteStartSignalLocation = std::nullopt;
+
 	std::unordered_map<TrackState, glm::vec3> m_TrackColors;
 	std::unordered_map<SignalState, std::unique_ptr<VectorIcon>> m_SignalIcons;
 
 	TrackLayer();
 
 	float PixelsPerMeter() const;
+
+	void HandleSignalClick(World& World, const Signal& Signal);
 
 	void RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const;
 

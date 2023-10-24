@@ -33,6 +33,7 @@ set(SOURCES
     Source/Renderer/VectorIcon.h
     Source/Renderer/Window.cpp
     Source/Renderer/Window.h
+    Source/Simulation/Route.h
     Source/Simulation/Signal.h
     Source/Simulation/Track.h
     Source/Simulation/Train.h

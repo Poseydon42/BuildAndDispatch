@@ -72,7 +72,7 @@ bool TrackLayer::OnMousePress(MouseButton::Button Button, const InputState& Inpu
 		{
 			if (m_SignalIcons.begin()->second->IsPointInside(WorldPos, TransformationMatrixForSignal(Signal)))
 			{
-				World.SwitchSignal(Signal.Location);
+				HandleSignalClick(World, Signal);
 				return true;
 			}
 		}
@@ -123,12 +123,45 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 TrackLayer::TrackLayer()
 {
 	m_TrackColors[TrackState::Free] = { 0.4f, 0.4f, 0.4f };
+	m_TrackColors[TrackState::Reserved] = { 0.76f, 0.75f, 0.14f };
 	m_TrackColors[TrackState::Occupied] = { 1.0f, 0.0f, 0.1f };
 }
 
 float TrackLayer::PixelsPerMeter() const
 {
 	return m_CameraScale * DefaultPixelsPerMeter;
+}
+
+void TrackLayer::HandleSignalClick(World& World, const Signal& Signal)
+{
+	// If the player has already selected the start signal for a new route,
+	// the current signal is the end signal.
+	if (m_RouteStartSignalLocation)
+	{
+		BD_LOG_DEBUG("Trying to create route from ({},{}) to ({},{})",
+			m_RouteStartSignalLocation->FromTile.x, m_RouteStartSignalLocation->FromTile.y,
+			Signal.Location.FromTile.x, Signal.Location.FromTile.y);
+
+		auto MaybeRoute = World.TryCreateRoute(*m_RouteStartSignalLocation, Signal.Location);
+		if (MaybeRoute)
+		{
+			BD_LOG_DEBUG("Successfully created route from ({},{}) to ({},{})",
+				m_RouteStartSignalLocation->FromTile.x, m_RouteStartSignalLocation->FromTile.y,
+				Signal.Location.FromTile.x, Signal.Location.FromTile.y);
+			BD_LOG_DEBUG("Route: ");
+			for (auto Tile : MaybeRoute->Tiles)
+				BD_LOG_DEBUG("\t({},{})", Tile.x, Tile.y);
+
+			World.TryOpenRoute(*MaybeRoute);
+		}
+
+		m_RouteStartSignalLocation = std::nullopt;
+	}
+	else
+	{
+		BD_LOG_DEBUG("Route start signal set to ({},{})", Signal.Location.FromTile.x, Signal.Location.FromTile.y)
+		m_RouteStartSignalLocation = Signal.Location;
+	}
 }
 
 void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const TrackTile& Tile) const

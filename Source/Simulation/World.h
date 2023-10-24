@@ -4,6 +4,7 @@
 #include <span>
 #include <vector>
 
+#include "Simulation/Route.h"
 #include "Simulation/Signal.h"
 #include "Simulation/Track.h"
 #include "Simulation/Train.h"
@@ -27,6 +28,10 @@ public:
 
 	void SwitchSignal(SignalLocation Location);
 
+	std::optional<Route> TryCreateRoute(SignalLocation From, SignalLocation To);
+
+	bool TryOpenRoute(const Route& Route);
+
 	std::span<const TrackTile> TrackTiles() const;
 	std::span<const Signal> Signals() const;
 	std::span<const Train> Trains() const;
@@ -47,4 +52,6 @@ private:
 
 	const Signal* FindSignal(SignalLocation Location) const;
 	Signal* FindSignal(SignalLocation Location);
+
+	bool CanMoveToTile(const TrackTile& From, const TrackTile& To) const;
 };

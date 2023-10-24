@@ -1,6 +1,7 @@
 #include "World.h"
 
 #include <algorithm>
+#include <functional>
 #include <stack>
 #include <glm/ext.hpp>
 
@@ -101,12 +102,14 @@ void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction)
 
 void World::Update(float DeltaTime)
 {
-	// Reset the state of all tracks to free
-	std::ranges::for_each(m_TrackTiles, [](auto& Tile)
+	// Reset the state of all occupied tracks to free (it is easier to recompute which tiles
+	// are occupied from scratch than use the state from the previous frame).
+	std::ranges::for_each(m_TrackTiles, [](TrackTile& Tile)
 	{
 		ForEachExistingDirection(Tile.ConnectedDirections, [&Tile](TrackDirection Direction)
 		{
-			Tile.SetState(Direction, TrackState::Free);
+			if (Tile.State(Direction) == TrackState::Occupied)
+				Tile.SetState(Direction, TrackState::Free);
 		});
 	});
 
@@ -139,6 +142,101 @@ void World::SwitchSignal(SignalLocation Location)
 
 	using SignalStateType = std::underlying_type_t<SignalState>;
 	Signal->State = static_cast<SignalState>((static_cast<SignalStateType>(Signal->State) + 1) % static_cast<SignalStateType>(SignalState::_Count));
+}
+
+std::optional<Route> World::TryCreateRoute(SignalLocation From, SignalLocation To)
+{
+	auto StartTileBeforeSignal = From.FromTile;
+	auto StartTileAfterSignal = From.ToTile;
+	auto EndTile = To.FromTile;
+
+	Route Result = { .From = From, .To = To };
+	Result.Tiles.push_back(StartTileBeforeSignal);
+
+	// NOTE: using vector of bytes instead of bools here because C++23 still doesn't implement vector<bool> properly
+	std::vector<uint8_t> Visited(m_TrackTiles.size(), 0);
+
+	// Do recursive DFS to find a path from StartTile to EndTile
+	// FIXME: this is a very naive implementation, we should probably use A* here
+	std::function<bool(const TrackTile*, const TrackTile*)> Search = [&](const TrackTile* Current, const TrackTile* Previous)
+	{
+		if (Visited[Current - m_TrackTiles.data()])
+			return false;
+		Visited[Current - m_TrackTiles.data()] = 1;
+
+		if (Current->Tile == EndTile)
+			return true;
+
+		auto DirectionToPreviousTile = OppositeDirection(TrackDirectionFromVector(Current->Tile - Previous->Tile));
+
+		for (const auto& Path : ListValidPathsInTile(Current->Tile.x, Current->Tile.y))
+		{
+			if (IsDeadEnd(Path))
+				continue;
+
+			if (!(Path & DirectionToPreviousTile))
+				continue;
+			auto Direction = Path & ~DirectionToPreviousTile;
+
+			auto NextTileCoords = Current->Tile + TrackDirectionToVector(Direction);
+			auto* Next = FindTile(NextTileCoords.x, NextTileCoords.y);
+			BD_ASSERT(Next);
+
+			Result.Tiles.push_back(NextTileCoords);
+			if (Search(Next, Current))
+				return true;
+			Result.Tiles.pop_back();
+		}
+
+		return false;
+	};
+
+	Result.Tiles.push_back(StartTileAfterSignal);
+	if (Search(FindTile(From.ToTile.x, From.ToTile.y), FindTile(StartTileBeforeSignal.x, StartTileBeforeSignal.y)))
+		return Result;
+
+	return std::nullopt;
+}
+
+bool World::TryOpenRoute(const Route& Route)
+{
+	// FIXME: check if the route is valid and clear of other trains
+
+	for (size_t Index = 0; Index < Route.Tiles.size() - 1; ++Index)
+	{
+		auto* From = FindTile(Route.Tiles[Index].x, Route.Tiles[Index].y);
+		auto* To = FindTile(Route.Tiles[Index + 1].x, Route.Tiles[Index + 1].y);
+		BD_ASSERT(From && To);
+
+		if (IsPoint(From->Tile.x, From->Tile.y))
+		{
+			BD_ASSERT(Index != 0); // A point should not be the first tile in the route
+			auto* Previous = FindTile(Route.Tiles[Index - 1].x, Route.Tiles[Index - 1].y);
+
+			auto IncomingDirection = OppositeDirection(TrackDirectionFromVector(From->Tile - Previous->Tile));
+			auto OutgoingDirection = TrackDirectionFromVector(To->Tile - From->Tile);
+
+			auto Path = IncomingDirection | OutgoingDirection;
+
+			auto PossiblePaths = ListValidPathsInTile(From->Tile.x, From->Tile.y);
+			for (size_t PathIndex = 0; PathIndex < PossiblePaths.size(); ++PathIndex)
+			{
+				if (PossiblePaths[PathIndex] != Path)
+					continue;
+				From->SelectedPath = static_cast<uint32_t>(PathIndex);
+			}
+		}
+
+		auto Direction = TrackDirectionFromVector(To->Tile - From->Tile);
+		From->SetState(Direction, TrackState::Reserved);
+		To->SetState(OppositeDirection(Direction), TrackState::Reserved);
+	}
+
+	auto* StartSignal = FindSignal(Route.From);
+	BD_ASSERT(StartSignal);
+	StartSignal->State = SignalState::Clear;
+
+	return true;
 }
 
 std::span<const TrackTile> World::TrackTiles() const
@@ -237,9 +335,13 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 				break;
 
 			// Check if there is a red signal ahead
-			const auto* Signal = FindSignal({ .FromTile = CurrentTile->Tile, .ToTile = NewTile->Tile });
+			auto* Signal = FindSignal({ .FromTile = CurrentTile->Tile, .ToTile = NewTile->Tile });
 			if (Signal && !CanTrainPassSignal(Signal->State))
 				break;
+
+			// Reset the state of the signal we just passed to danger
+			if (Signal && Signal->State == SignalState::Clear)
+				Signal->State = SignalState::Danger;
 
 			CurrentTile = NewTile;
 			Train.Tile = NewTileCoords;
@@ -349,4 +451,16 @@ Signal* World::FindSignal(SignalLocation Location)
 		return Candidate.Location == Location;
 	});
 	return (It == m_Signals.end() ? nullptr : &*It);
+}
+
+bool World::CanMoveToTile(const TrackTile& From, const TrackTile& To) const
+{
+	if (!From.IsConnectedTo(To))
+		return false;
+
+	// Signals should not be unconditionally passable, unlike regular tracks
+	if (FindSignal({ .FromTile = From.Tile, .ToTile = To.Tile }) != nullptr)
+		return false;
+
+	return true;
 }

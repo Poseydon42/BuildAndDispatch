@@ -164,6 +164,10 @@ std::optional<Route> World::TryCreateRoute(SignalLocation From, SignalLocation T
 			return false;
 		Visited[Current - m_TrackTiles.data()] = 1;
 
+		// NOTE: this means we're creating a route to a signal which points in the direction opposite to the direction of the start tile
+		if (Current->Tile == To.ToTile)
+			return false;
+
 		if (Current->Tile == EndTile)
 			return true;
 

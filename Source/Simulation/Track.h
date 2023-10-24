@@ -21,55 +21,6 @@ enum class TrackDirection : uint8_t
 	NW = 128,
 };
 
-enum class TrackState
-{
-	Free,
-	Occupied,
-};
-
-struct TrackTile
-{
-	glm::ivec2 Tile;
-
-	TrackDirection ConnectedDirections = TrackDirection::None;
-	uint32_t SelectedPath = 0;
-
-	constexpr TrackTile(glm::ivec2 InTile, TrackDirection InConnectedDirections)
-		: Tile(InTile)
-		, ConnectedDirections(InConnectedDirections)
-	{
-	}
-
-	constexpr TrackState State(TrackDirection Direction) const
-	{
-		return m_State[StateArrayIndex(Direction)];
-	}
-
-	constexpr bool HasAny(TrackState State) const
-	{
-		return this->State(TrackDirection::N) == State || this->State(TrackDirection::NE) == State ||
-			   this->State(TrackDirection::E) == State || this->State(TrackDirection::SE) == State ||
-			   this->State(TrackDirection::S) == State || this->State(TrackDirection::SW) == State ||
-			   this->State(TrackDirection::W) == State || this->State(TrackDirection::NW) == State;
-	}
-
-	constexpr void SetState(TrackDirection Direction, TrackState State)
-	{
-		m_State[StateArrayIndex(Direction)] = State;
-	}
-
-private:
-	TrackState m_State[8] = { TrackState::Free };
-
-	static constexpr size_t StateArrayIndex(TrackDirection Direction)
-	{
-		auto DirectionAsByte = std::to_underlying(Direction);
-		BD_ASSERT(std::has_single_bit(DirectionAsByte));
-		auto Index = std::countr_zero(DirectionAsByte);
-		return Index;
-	}
-};
-
 constexpr bool operator!(TrackDirection Value)
 {
 	return static_cast<std::underlying_type_t<TrackDirection>>(Value) == 0;
@@ -234,3 +185,68 @@ constexpr bool IsDeadEnd(TrackDirection Direction)
 		Direction == TrackDirection::S || Direction == TrackDirection::SW ||
 		Direction == TrackDirection::W || Direction == TrackDirection::NW);
 }
+
+constexpr bool AreTilesNeighbors(glm::ivec2 Lhs, glm::ivec2 Rhs)
+{
+	auto Delta = Lhs - Rhs;
+	if (Delta.x == 0 && Delta.y == 0)
+		return false;
+	if (std::abs(Delta.x) >= 2 || std::abs(Delta.y) >= 2)
+		return false;
+	return true;
+}
+
+enum class TrackState
+{
+	Free,
+	Reserved,
+	Occupied,
+};
+
+struct TrackTile
+{
+	glm::ivec2 Tile;
+
+	TrackDirection ConnectedDirections = TrackDirection::None;
+	uint32_t SelectedPath = 0;
+
+	constexpr TrackTile(glm::ivec2 InTile, TrackDirection InConnectedDirections)
+		: Tile(InTile)
+		, ConnectedDirections(InConnectedDirections)
+	{
+	}
+
+	constexpr TrackState State(TrackDirection Direction) const
+	{
+		return m_State[StateArrayIndex(Direction)];
+	}
+
+	constexpr bool HasAny(TrackState State) const
+	{
+		return this->State(TrackDirection::N) == State || this->State(TrackDirection::NE) == State ||
+			this->State(TrackDirection::E) == State || this->State(TrackDirection::SE) == State ||
+			this->State(TrackDirection::S) == State || this->State(TrackDirection::SW) == State ||
+			this->State(TrackDirection::W) == State || this->State(TrackDirection::NW) == State;
+	}
+
+	constexpr void SetState(TrackDirection Direction, TrackState State)
+	{
+		m_State[StateArrayIndex(Direction)] = State;
+	}
+
+	constexpr bool IsConnectedTo(const TrackTile& Other) const
+	{
+		return AreTilesNeighbors(Tile, Other.Tile) && !!(ConnectedDirections & TrackDirectionFromVector(Other.Tile - Tile));
+	}
+
+private:
+	TrackState m_State[8] = { TrackState::Free };
+
+	static constexpr size_t StateArrayIndex(TrackDirection Direction)
+	{
+		auto DirectionAsByte = std::to_underlying(Direction);
+		BD_ASSERT(std::has_single_bit(DirectionAsByte));
+		auto Index = std::countr_zero(DirectionAsByte);
+		return Index;
+	}
+};

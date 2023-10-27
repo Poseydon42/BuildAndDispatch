@@ -16,7 +16,7 @@ public:
 
 	void AddSignal(SignalLocation Location);
 
-	void SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction);
+	void SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction, float Length);
 
 	void Update(float DeltaTime);
 
@@ -40,6 +40,13 @@ private:
 	std::vector<TrackTile> m_TrackTiles;
 	std::vector<Signal> m_Signals;
 	std::vector<Train> m_Trains;
+
+	// NOTE: TileBorderCallbackType = bool()(const TrackTile& From, const TrackTile& To);
+	//       The callback should return true if the train can proceed to the next tile.
+	// NOTE: TileCallbackType = void()(const TrackTile& Tile, TrackDirection Segment);
+	//       The callback is called for each tile segment the train passes through.
+	template<typename TileBorderCallbackType, typename TileCallbackType>
+	float MoveAlongTrack(const TrackTile*& Tile, TrackDirection& Direction, float& OffsetInTile, float MaxDistance, TileBorderCallbackType&& TileBorderCallback, TileCallbackType&& TileCallback) const;
 
 	void UpdateTrain(Train& Train, float DeltaTime);
 

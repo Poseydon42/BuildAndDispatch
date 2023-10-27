@@ -26,4 +26,9 @@ struct Train
 	 * the directions in the tile.
 	 */
 	TrackDirection Direction;
+
+	/*
+	 * Length of the train in meters.
+	 */
+	const float Length = 1.0f;
 };

@@ -59,8 +59,8 @@ static void GenerateDebugWorld(World& World)
 	World.AddSignal({ { 4, -1 },{ 5, 0 } });
 	World.AddSignal({ { 7, 0 },{ 6, 0} });
 
-	World.SpawnTrain(-6, 0, TrackDirection::E);
-	World.SpawnTrain(8, 0, TrackDirection::W);
+	World.SpawnTrain(-6, 0, TrackDirection::E, 0.5f);
+	World.SpawnTrain(8, 0, TrackDirection::W, 6.4f);
 }
 
 template<typename FuncType>

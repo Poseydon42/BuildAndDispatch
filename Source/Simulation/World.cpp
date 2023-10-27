@@ -70,7 +70,7 @@ void World::AddSignal(SignalLocation Location)
 	m_Signals.push_back(NewSignal);
 }
 
-void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction)
+void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction, float Length)
 {
 	const auto* Tile = FindTile(X, Y);
 	if (!Tile)
@@ -95,7 +95,8 @@ void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction)
 	{
 		.Tile = glm::ivec2(X, Y),
 		.OffsetInTile = 0.0f,
-		.Direction = Direction
+		.Direction = Direction,
+		.Length = Length
 	};
 	m_Trains.push_back(NewTrain);
 }
@@ -279,108 +280,137 @@ std::span<const Train> World::Trains() const
 	return m_Trains;
 }
 
-void World::UpdateTrain(Train& Train, float DeltaTime)
+template<typename TileBorderCallbackType, typename TileCallbackType>
+float World::MoveAlongTrack(const TrackTile*& Tile, TrackDirection& Direction, float& OffsetInTile, float MaxDistance, TileBorderCallbackType&& TileBorderCallback, TileCallbackType&& TileCallback) const
 {
-	// In m/s
-	constexpr float TrainSpeed = 2.0f;
-	float DistanceToTravel = TrainSpeed * DeltaTime;
-
-	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);
-	BD_ASSERT(CurrentTile);
-	while (CurrentTile && DistanceToTravel > 0.001f)
+	float DistanceToTravel = MaxDistance;
+	while (Tile && DistanceToTravel > 0.0f)
 	{
 		// Handle motion towards the center of the tile first
-		if (Train.OffsetInTile < 0.0f)
+		if (OffsetInTile < 0.0f)
 		{
+			TileCallback(*Tile, OppositeDirection(Direction));
+
 			// -Train.OffsetInTile represents the percentage of the distance that the
 			// train still has to travel towards the center of the current tile.
-			float LengthOfCurrentHalfTile = HalfTileLengthInDirection(Train.Direction);
-			float DistanceToTravelToCenter = -Train.OffsetInTile * LengthOfCurrentHalfTile;
+			float LengthOfCurrentHalfTile = HalfTileLengthInDirection(Direction);
+			float DistanceToTravelToCenter = -OffsetInTile * LengthOfCurrentHalfTile;
 			if (DistanceToTravelToCenter >= DistanceToTravel)
 			{
 				float DistanceTraveled = DistanceToTravel / LengthOfCurrentHalfTile;
 				DistanceToTravel = 0.0f;
-				Train.OffsetInTile += DistanceTraveled; // Because Train.OffsetInTile < 0 and DistanceTraveled > 0
-				BD_ASSERT(Train.OffsetInTile <= 0.0f);
+				OffsetInTile += DistanceTraveled; // Because Train.OffsetInTile < 0 and DistanceTraveled > 0
+				BD_ASSERT(OffsetInTile <= 0.0f);
 			}
 			else
 			{
 				DistanceToTravel -= DistanceToTravelToCenter;
-				Train.OffsetInTile = 0.0f;
+				OffsetInTile = 0.0f;
 			}
 		}
 
 		// Set the new direction when going over the center of the tile
-		if (Train.OffsetInTile == 0.0f)
+		if (OffsetInTile == 0.0f)
 		{
 			// We reached end of the track
-			if (IsDeadEnd(CurrentTile->ConnectedDirections))
+			if (IsDeadEnd(Tile->ConnectedDirections))
 				break;
 
-			auto SelectedPath = ListValidPathsInTile(Train.Tile.x, Train.Tile.y)[CurrentTile->SelectedPath];
-			BD_ASSERT(!!(SelectedPath & OppositeDirection(Train.Direction))); // NOTE: just to ensure that the train's path so far was valid
+			auto SelectedPath = ListValidPathsInTile(Tile->Tile.x, Tile->Tile.y)[Tile->SelectedPath];
+			BD_ASSERT(!!(SelectedPath & OppositeDirection(Direction))); // NOTE: just to ensure that the train's path so far was valid
 
 			// NOTE: the direction the train is currently moving in is OPPOSITE to the direction
 			//       of the track segment it is currently occupying since it's moving TOWARDS
 			//       the center of the current tile.
-			auto DirectionInFront = SelectedPath & ~OppositeDirection(Train.Direction);
-			Train.Direction = DirectionInFront;
+			auto DirectionInFront = SelectedPath & ~OppositeDirection(Direction);
+			Direction = DirectionInFront;
 		}
 
 		// Handle motion away from the center of the tile
-		if (Train.OffsetInTile >= 0.0f)
+		if (OffsetInTile >= 0.0f)
 		{
+			TileCallback(*Tile, Direction);
+
 			// (1.0 - Train.OffsetInTile) represents the percentage of the distance that the
 			// train still has to travel towards the border with the next tile.
-			float LengthOfCurrentHalfTile = HalfTileLengthInDirection(Train.Direction);
-			float DistanceToTravelToEdge = (1.0f - Train.OffsetInTile) * LengthOfCurrentHalfTile;
+			float LengthOfCurrentHalfTile = HalfTileLengthInDirection(Direction);
+			float DistanceToTravelToEdge = (1.0f - OffsetInTile) * LengthOfCurrentHalfTile;
 			if (DistanceToTravelToEdge > DistanceToTravel)
 			{
 				float DistanceTraveled = DistanceToTravel / LengthOfCurrentHalfTile;
 				DistanceToTravel = 0.0f;
-				Train.OffsetInTile += DistanceTraveled;
-				BD_ASSERT(Train.OffsetInTile <= 1.0f);
+				OffsetInTile += DistanceTraveled;
+				BD_ASSERT(OffsetInTile <= 1.0f);
 			}
 			else
 			{
 				DistanceToTravel -= DistanceToTravelToEdge;
-				Train.OffsetInTile = 1.0f;
+				OffsetInTile = 1.0f;
 			}
 		}
 
 		// Move to the next tile if train is right at the boundary
 		constexpr float Epsilon = 1.0e-5f;
-		if (std::abs(Train.OffsetInTile - 1.0f) < Epsilon)
+		if (std::abs(OffsetInTile - 1.0f) < Epsilon)
 		{
-			auto NewTileCoords = Train.Tile + TrackDirectionToVector(Train.Direction);
+			auto NewTileCoords = Tile->Tile + TrackDirectionToVector(Direction);
 			const auto* NewTile = FindTile(NewTileCoords.x, NewTileCoords.y);
 
 			// Reached a dead end
 			if (!NewTile)
 				break;
 
-			// Check if there is a red signal ahead
-			auto* Signal = FindSignal({ .FromTile = CurrentTile->Tile, .ToTile = NewTile->Tile });
-			if (Signal && !CanTrainPassSignal(Signal->State))
+			if (!TileBorderCallback(*Tile, *NewTile))
 				break;
 
-			// Reset the state of the signal we just passed to danger
-			if (Signal && Signal->State == SignalState::Clear)
-				Signal->State = SignalState::Danger;
-
-			CurrentTile = NewTile;
-			Train.Tile = NewTileCoords;
-			Train.OffsetInTile = -1.0f;
+			Tile = NewTile;
+			OffsetInTile = -1.0f;
 		}
 	}
 
-	// Set the state of the track the train is currently at to occupied
-	auto* Tile = FindTile(Train.Tile.x, Train.Tile.y);
-	if (Tile)
+	BD_ASSERT(DistanceToTravel >= 0.0f);
+	return MaxDistance - DistanceToTravel;
+}
+
+
+void World::UpdateTrain(Train& Train, float DeltaTime)
+{
+	// In m/s
+	constexpr float TrainSpeed = 0.20f;
+	float DistanceToTravel = TrainSpeed * DeltaTime;
+
+	// Move the train along the track
+	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);
+	BD_ASSERT(CurrentTile);
+	MoveAlongTrack(CurrentTile, Train.Direction, Train.OffsetInTile, DistanceToTravel, [this](const TrackTile& From, const TrackTile& To)
 	{
-		auto CurrentDirectionInTile = (Train.OffsetInTile < 0.0f ? OppositeDirection(Train.Direction) : Train.Direction);
-		FloodFillOccupiedTrack(Tile, CurrentDirectionInTile);
-	}
+		auto* Signal = FindSignal({ From.Tile, To.Tile });
+		if (Signal && !CanTrainPassSignal(Signal->State))
+			return false;
+
+		// Reset the state of the signal we just passed to danger
+		if (Signal)
+			Signal->State = SignalState::Danger;
+
+		return true;
+	}, [](const TrackTile&, TrackDirection){});
+	Train.Tile = CurrentTile->Tile;
+
+	// Go back along the train and mark all the tiles it occupies as occupied, and propagate this state to all
+	// the tiles that are connected to the current tile and do not have a track circuit break between them
+	const auto* Tile = FindTile(Train.Tile.x, Train.Tile.y);
+	auto Direction = OppositeDirection(Train.Direction);
+	// FIXME: this works, but I don't really get why we need to take the absolute value here
+	auto OffsetInTile = -Train.OffsetInTile;
+	MoveAlongTrack(Tile, Direction, OffsetInTile, Train.Length, [this](const TrackTile& From, const TrackTile& To)
+	{
+		// NOTE: we don't need to check if the train can pass the signal here because we already did it in the previous step
+		return true;
+	},
+	[this](const TrackTile& OccupiedTile, TrackDirection Segment)
+	{
+		FloodFillOccupiedTrack(FindTile(OccupiedTile.Tile.x, OccupiedTile.Tile.y), Segment);
+	});
 }
 
 void World::FloodFillOccupiedTrack(TrackTile* InitialTile, TrackDirection InitialTileSegment)

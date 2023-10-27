@@ -99,7 +99,6 @@ std::unique_ptr<GameLoop> GameLoop::Create()
 int GameLoop::Run()
 {
 	auto LastFrameEnd = Time::Now();
-	float RunningTime = 0.0f;
 	while (!m_Window->ShouldClose())
 	{
 		auto FrameStart = Time::Now();

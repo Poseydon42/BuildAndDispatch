@@ -60,6 +60,32 @@ static std::optional<glm::vec<Size, float>> ParseVector(std::string_view Name, c
 		return std::nullopt;
 }
 
+static std::optional<glm::vec4> ParseColor(const nlohmann::json& Node)
+{
+	glm::vec4 Color = {};
+	auto MaybeColorWithAlpha = ParseVector<4>("color", Node);
+	if (MaybeColorWithAlpha.has_value())
+	{
+		Color = MaybeColorWithAlpha.value();
+	}
+	else
+	{
+		auto MaybeColorWithoutAlpha = ParseVector<3>("color", Node);
+		if (MaybeColorWithoutAlpha.has_value())
+		{
+			Color = { MaybeColorWithoutAlpha.value(), 1.0f };
+		}
+		else
+		{
+			BD_LOG_ERROR("Failed to parse color value");
+			BD_LOG_INFO("JSON string: \n{}", Node.dump());
+			return std::nullopt;
+		}
+	}
+
+	return Color;
+}
+
 static bool ParseCircle(const nlohmann::json& Node, VectorIconBuilder& Builder)
 {
 	BD_ASSERT(Node.contains("type") && Node["type"].is_string() && Node["type"] == "circle");
@@ -82,28 +108,13 @@ static bool ParseCircle(const nlohmann::json& Node, VectorIconBuilder& Builder)
 	}
 	auto Radius = MaybeRadius.value();
 
-	glm::vec4 Color = {};
-	auto MaybeColorWithAlpha = ParseVector<4>("color", Node);
-	if (MaybeColorWithAlpha.has_value())
+	auto MaybeColor = ParseColor(Node);
+	if (!MaybeColor.has_value())
 	{
-		Color = MaybeColorWithAlpha.value();
-	}
-	else
-	{
-		auto MaybeColorWithoutAlpha = ParseVector<3>("color", Node);
-		if (MaybeColorWithoutAlpha.has_value())
-		{
-			Color = { MaybeColorWithoutAlpha.value(), 1.0f };
-		}
-		else
-		{
-			BD_LOG_ERROR("Failed to parse circle node: no valid color provided");
-			BD_LOG_INFO("JSON string: \n{}", Node.dump());
-			return false;
-		}
+		return false;
 	}
 
-	Builder.AddCircle(Center, Radius, Color);
+	Builder.AddCircle(Center, Radius, MaybeColor.value());
 	return true;
 }
 
@@ -138,28 +149,47 @@ static bool ParseLine(const nlohmann::json& Node, VectorIconBuilder& Builder)
 	}
 	auto Thickness = MaybeThickness.value();
 
-	glm::vec4 Color = {};
-	auto MaybeColorWithAlpha = ParseVector<4>("color", Node);
-	if (MaybeColorWithAlpha.has_value())
+	auto MaybeColor = ParseColor(Node);
+	if (!MaybeColor.has_value())
 	{
-		Color = MaybeColorWithAlpha.value();
-	}
-	else
-	{
-		auto MaybeColorWithoutAlpha = ParseVector<3>("color", Node);
-		if (MaybeColorWithoutAlpha.has_value())
-		{
-			Color = { MaybeColorWithoutAlpha.value(), 1.0f };
-		}
-		else
-		{
-			BD_LOG_ERROR("Failed to parse line node: no valid color provided");
-			BD_LOG_INFO("JSON string: \n{}", Node.dump());
-			return false;
-		}
+		return false;
 	}
 
-	Builder.AddLine(From, To, Thickness, Color);
+	Builder.AddLine(From, To, Thickness, MaybeColor.value());
+	return true;
+}
+
+static bool ParsePolygon(const nlohmann::json& Node, VectorIconBuilder& Builder)
+{
+	BD_ASSERT(Node.contains("type") && Node["type"].is_string() && Node["type"] == "polygon");
+
+	if (!Node.contains("vertices") || Node["vertices"].type() != nlohmann::detail::value_t::array)
+	{
+		BD_LOG_ERROR("Failed to parse polygon node: no vertices provided");
+		BD_LOG_INFO("JSON string: \n{}", Node.dump());
+		return false;
+	}
+	const auto& JSONVertices = Node["vertices"];
+
+	std::vector<glm::vec2> Vertices;
+	for (const auto& JSONVertex : JSONVertices)
+	{
+		if (JSONVertex.type() != nlohmann::detail::value_t::array || JSONVertex.size() != 2 || !JSONVertex[0].is_number() || !JSONVertex[1].is_number())
+		{
+			BD_LOG_ERROR("Failed to parse polygon node: invalid vertex");
+			BD_LOG_INFO("JSON string: \n{}", JSONVertex.dump());
+		}
+
+		Vertices.emplace_back(static_cast<float>(JSONVertex[0]), static_cast<float>(JSONVertex[1]));
+	}
+
+	auto MaybeColor = ParseColor(Node);
+	if (!MaybeColor.has_value())
+	{
+		return false;
+	}
+
+	Builder.AddPolygon(Vertices, MaybeColor.value());
 	return true;
 }
 
@@ -188,6 +218,10 @@ static bool ParseNode(const nlohmann::json& Node, VectorIconBuilder& Builder)
 	else if (Type == "line")
 	{
 		return ParseLine(Node, Builder);
+	}
+	else if (Type == "polygon")
+	{
+		return ParsePolygon(Node, Builder);
 	}
 	else
 	{
@@ -288,6 +322,13 @@ void VectorIconBuilder::AddLine(glm::vec2 From, glm::vec2 To, float Thickness, g
 
 	AddTriangle(V1, V2, V3, Color);
 	AddTriangle(V2, V4, V3, Color);
+}
+
+void VectorIconBuilder::AddPolygon(const std::vector<glm::vec2>& Vertices, glm::vec4 Color)
+{
+	BD_ASSERT(Vertices.size() >= 3);
+	for (size_t VertexIndex = 1; VertexIndex < Vertices.size() - 1; VertexIndex++)
+		AddTriangle(Vertices[0], Vertices[VertexIndex], Vertices[VertexIndex + 1], Color);
 }
 
 std::unique_ptr<VectorIcon> VectorIconBuilder::Build() const

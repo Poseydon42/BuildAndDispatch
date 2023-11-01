@@ -35,6 +35,12 @@ public:
 
 	void AddLine(glm::vec2 From, glm::vec2 To, float Thickness, glm::vec4 Color);
 
+	/**
+	 * Adds a closed polygon constructed with the given vertices, in order.
+	 * NOTE: the polygon must be convex.
+	 */
+	void AddPolygon(const std::vector<glm::vec2>& Vertices, glm::vec4 Color);
+
 	std::unique_ptr<VectorIcon> Build() const;
 
 private:

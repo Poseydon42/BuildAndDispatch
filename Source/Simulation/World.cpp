@@ -280,6 +280,16 @@ std::span<const Train> World::Trains() const
 	return m_Trains;
 }
 
+float& World::SimulationSpeed()
+{
+	return m_SimulationSpeed;
+}
+
+const float& World::SimulationSpeed() const
+{
+	return m_SimulationSpeed;
+}
+
 template<typename TileBorderCallbackType, typename TileCallbackType>
 float World::MoveAlongTrack(const TrackTile*& Tile, TrackDirection& Direction, float& OffsetInTile, float MaxDistance, TileBorderCallbackType&& TileBorderCallback, TileCallbackType&& TileCallback) const
 {
@@ -377,12 +387,12 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 {
 	// In m/s
 	constexpr float TrainSpeed = 0.20f;
-	float DistanceToTravel = TrainSpeed * DeltaTime;
+	float DistanceToTravel = TrainSpeed * SimulationSpeed() * DeltaTime;
 
 	// Move the train along the track
 	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);
 	BD_ASSERT(CurrentTile);
-	MoveAlongTrack(CurrentTile, Train.Direction, Train.OffsetInTile, DistanceToTravel, [this](const TrackTile& From, const TrackTile& To)
+	MoveAlongTrack(CurrentTile, Train.Direction, Train.OffsetInTile, DistanceToTravel, [&](const TrackTile& From, const TrackTile& To)
 	{
 		auto* Signal = FindSignal({ From.Tile, To.Tile });
 		if (Signal && !CanTrainPassSignal(Signal->State))

@@ -36,10 +36,15 @@ public:
 	std::span<const Signal> Signals() const;
 	std::span<const Train> Trains() const;
 
+	float& SimulationSpeed();
+	const float& SimulationSpeed() const;
+
 private:
 	std::vector<TrackTile> m_TrackTiles;
 	std::vector<Signal> m_Signals;
 	std::vector<Train> m_Trains;
+
+	float m_SimulationSpeed = 1.0f;
 
 	// NOTE: TileBorderCallbackType = bool()(const TrackTile& From, const TrackTile& To);
 	//       The callback should return true if the train can proceed to the next tile.

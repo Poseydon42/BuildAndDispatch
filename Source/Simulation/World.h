@@ -14,6 +14,8 @@ class World
 public:
 	void AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 
+	uint32_t AddTrackArea(TrackArea Area);
+
 	void AddSignal(SignalLocation Location);
 
 	void SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction, float Length);
@@ -41,6 +43,8 @@ public:
 
 private:
 	std::vector<TrackTile> m_TrackTiles;
+	std::vector<TrackArea> m_TrackAreas;
+
 	std::vector<Signal> m_Signals;
 	std::vector<Train> m_Trains;
 

@@ -48,6 +48,12 @@ void World::AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
 	AddTrackInSingleDirection(ToX, ToY, FromX, FromY);
 }
 
+uint32_t World::AddTrackArea(TrackArea Area)
+{
+	m_TrackAreas.push_back(std::move(Area));
+	return static_cast<uint32_t>(m_TrackAreas.size()) - 1;
+}
+
 void World::AddSignal(SignalLocation Location)
 {
 	BD_ASSERT(std::abs(Location.FromTile.x - Location.ToTile.x) <= 1
@@ -401,6 +407,25 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 		// Reset the state of the signal we just passed to danger
 		if (Signal)
 			Signal->State = SignalState::Danger;
+
+		// Check if the train entered or left any track areas
+		std::ranges::for_each(m_TrackAreas, [&](const TrackArea& TrackArea)
+		{
+			bool Entered = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaEntryPoint& EntryPoint)
+			{
+				return EntryPoint.TileFrom == From.Tile && EntryPoint.TileTo == To.Tile;
+			});
+			if (Entered)
+				BD_LOG_INFO("Train entered track area {} at ({},{})", TrackArea.DebugName, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+
+			bool Left = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaEntryPoint& EntryPoint)
+			{
+				// NOTE: we are comparing the tiles in the opposite order here because we are leaving the track area
+				return EntryPoint.TileFrom == To.Tile && EntryPoint.TileTo == From.Tile;
+			});
+			if (Left)
+				BD_LOG_INFO("Head of train left track area {} at ({},{})", TrackArea.DebugName, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+		});
 
 		return true;
 	}, [](const TrackTile&, TrackDirection){});

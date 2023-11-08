@@ -40,6 +40,17 @@ set(SOURCES
     Source/Simulation/Train.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
+    Source/UI/Brush.h
+    Source/UI/Brushes/SolidColorBrush.cpp
+    Source/UI/Brushes/SolidColorBrush.h
+    Source/UI/Container.h
+    Source/UI/Containers/VerticalContainer.cpp
+    Source/UI/Containers/VerticalContainer.h
+    Source/UI/RenderBuffer.cpp
+    Source/UI/RenderBuffer.h
+    Source/UI/Widget.h
+    Source/UI/Widgets/Panel.cpp
+    Source/UI/Widgets/Panel.h
     Source/Windows/Time.cpp
     Source/Windows/File.cpp
     Source/Windows/File.h

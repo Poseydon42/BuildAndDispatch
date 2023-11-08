@@ -20,6 +20,8 @@ public:
 
 	void Draw(const VectorIcon& Icon, const glm::mat4& TransformationMatrix);
 
+	void DrawWithShader(const GeometryBuffer& Buffer, const Shader& Shader);
+
 	void Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color);
 
 	glm::vec2 FramebufferSize() const;

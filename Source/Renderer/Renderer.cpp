@@ -75,6 +75,14 @@ void Renderer::Draw(const VectorIcon& Icon, const glm::mat4& TransformationMatri
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(Icon.GeometryBuffer().VertexCount()));
 }
 
+void Renderer::DrawWithShader(const GeometryBuffer& Buffer, const Shader& Shader)
+{
+	Shader.Bind();
+
+	Buffer.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(Buffer.VertexCount()));
+}
+
 void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 {
 	m_DebugLineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });

@@ -108,10 +108,11 @@ int GameLoop::Run()
 		m_Window->PollEvents();
 		UpdateInputState();
 
+		Rect2D RenderArea = { .Min = { 0.0f, 0.0f }, .Max = m_Renderer->FramebufferSize() };
 		for (size_t Index = m_Layers.size(); Index > 0; Index--)
 		{
 			const auto& Layer = m_Layers[Index - 1];
-			Layer->Update(0.0f, m_InputState, m_World); // FIXME: add delta time
+			Layer->Update(DeltaTime, m_InputState, m_World, RenderArea);
 		}
 
 		m_World.Update(DeltaTime);

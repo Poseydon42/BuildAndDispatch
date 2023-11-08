@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/InputState.h"
+#include "Core/Rect2D.h"
 #include "Renderer/Renderer.h"
 #include "Simulation/World.h"
 
@@ -15,7 +16,7 @@ public:
 
 	virtual bool OnMouseScroll(int32_t Offset, const InputState& InputState, World& World) { return false; }
 
-	virtual void Update(float DeltaTime, const InputState& InputState, World& World) {}
+	virtual void Update(float DeltaTime, const InputState& InputState, World& World, Rect2D UsableArea) {}
 
 	virtual void Render(Renderer& Renderer, const World& World) const {};
 };

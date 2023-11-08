@@ -94,7 +94,7 @@ bool TrackLayer::OnMouseScroll(int32_t Offset, const InputState&, World&)
 	return true;
 }
 
-void TrackLayer::Update(float DeltaTime, const InputState& InputState, World& World)
+void TrackLayer::Update(float DeltaTime, const InputState& InputState, World& World, Rect2D)
 {
 	if (InputState.MouseButtonStates[MouseButton::Right])
 		m_CameraLocation += glm::vec2(InputState.MousePositionDelta) * glm::vec2(-1.0f, 1.0f) / PixelsPerMeter();

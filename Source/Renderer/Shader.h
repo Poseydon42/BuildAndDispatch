@@ -40,11 +40,25 @@ void Shader::SetUniform(std::string_view Name, const DataType& Value)
 template<typename DataType>
 void Shader::SetUniform(uint32_t Index, const DataType& Value)
 {
-	BD_UNREACHABLE()
+	BD_UNREACHABLE();
 }
 
+/*
+ * VECTORS
+ */
+template<>
+inline void Shader::SetUniform(uint32_t Index, const glm::vec4& Value)
+{
+	Bind();
+	glUniform4fv(Index, 1, glm::value_ptr(Value));
+}
+
+/*
+ * MATRICES
+ */
 template<>
 inline void Shader::SetUniform(uint32_t Index, const glm::mat4& Value)
 {
+	Bind();
 	glUniformMatrix4fv(Index, 1, false, glm::value_ptr(Value));
 }

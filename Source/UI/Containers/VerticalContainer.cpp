@@ -55,9 +55,11 @@ void VerticalContainer::Layout()
 		auto AbsoluteLeftMargin = Child.LeftMargin().GetAbsoluteValue(BoundingBox().Width());
 		auto AbsoluteRightMargin = Child.RightMargin().GetAbsoluteValue(BoundingBox().Width());
 
-		if (AbsoluteLeftMargin + AbsoluteRightMargin > BoundingBox().Width())
+		if (AbsoluteLeftMargin + AbsoluteRightMargin > BoundingBox().Width() - Child.ComputePreferredSize().x)
 		{
-			AbsoluteRightMargin = BoundingBox().Width() - AbsoluteLeftMargin;
+			float Scale = (BoundingBox().Width() - Child.ComputePreferredSize().x) / (AbsoluteLeftMargin + AbsoluteRightMargin);
+			AbsoluteLeftMargin *= Scale;
+			AbsoluteRightMargin *= Scale;
 		}
 
 		auto PreferredHeight = Child.ComputePreferredSize().y;

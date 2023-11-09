@@ -8,17 +8,30 @@ std::unique_ptr<VerticalContainer> VerticalContainer::Create()
 glm::vec2 VerticalContainer::ComputePreferredSize() const
 {
 	glm::vec2 Result = {};
-	ForEachChild([&Result](const Widget& Widget)
+	bool First = true;
+	ForEachChild([&](const Widget& Widget)
 	{
 		auto PreferredSize = Widget.ComputePreferredSize();
+		if (PreferredSize.y <= 0.0f)
+			return;
+
 		Result.x = std::max(Result.x, PreferredSize.x);
 		Result.y += PreferredSize.y;
+
+		if (!First)
+		{
+			Result.y += Spacing();
+			First = false;
+		}
 	});
 	return Result;
 }
 
 void VerticalContainer::Layout()
 {
+	if (ChildCount() == 0)
+		return;
+
 	// First pass - calculate the total preferred height and the total vertical stretch ratio
 
 	float TotalPreferredHeight = 0.0f;
@@ -28,6 +41,7 @@ void VerticalContainer::Layout()
 		TotalPreferredHeight += Child.ComputePreferredSize().y;
 		TotalVerticalStretchRatio += Child.VerticalStretchRatio();
 	});
+	TotalPreferredHeight += Spacing() * (ChildCount() - 1);
 
 	float AvailableStretch = BoundingBox().Height() - TotalPreferredHeight;
 	if (AvailableStretch < 0.0f)
@@ -55,7 +69,7 @@ void VerticalContainer::Layout()
 
 		Child.BoundingBox().Top() = Y;
 		Child.BoundingBox().Bottom() = Y - TotalHeight;
-		Y -= TotalHeight;
+		Y -= (TotalHeight + Spacing());
 
 		Child.Layout();
 	});

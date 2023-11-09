@@ -22,6 +22,11 @@ public:
 		m_Widgets.erase(m_Widgets.begin() + Index);
 	}
 
+	size_t ChildCount() const
+	{
+		return m_Widgets.size();
+	}
+
 	template<typename FuncType>
 	requires (std::invocable<FuncType, Widget&>)
 	void ForEachChild(FuncType&& Func)

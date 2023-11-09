@@ -12,6 +12,11 @@ public:
 
 	virtual void Layout() override;;
 
+	float& Spacing() { return m_Spacing; }
+	const float& Spacing() const { return m_Spacing; }
+
 private:
 	VerticalContainer() = default;
+
+	float m_Spacing = 0.0f;
 };

@@ -19,19 +19,44 @@ glm::vec2 VerticalContainer::ComputePreferredSize() const
 
 void VerticalContainer::Layout()
 {
+	// First pass - calculate the total preferred height and the total vertical stretch ratio
+
+	float TotalPreferredHeight = 0.0f;
+	float TotalVerticalStretchRatio = 0.00000001f; // Avoid division by zero if no children want to be stretched
+	ForEachChild([&](const Widget& Child)
+	{
+		TotalPreferredHeight += Child.ComputePreferredSize().y;
+		TotalVerticalStretchRatio += Child.VerticalStretchRatio();
+	});
+
+	float AvailableStretch = BoundingBox().Height() - TotalPreferredHeight;
+	if (AvailableStretch < 0.0f)
+		AvailableStretch = 0.0f;
+
+	// Second pass - position each child
+
 	float Y = BoundingBox().Top();
 	ForEachChild([&](Widget& Child)
 	{
-		auto PreferredSize = Child.ComputePreferredSize();
+		auto AbsoluteLeftMargin = Child.LeftMargin().GetAbsoluteValue(BoundingBox().Width());
+		auto AbsoluteRightMargin = Child.RightMargin().GetAbsoluteValue(BoundingBox().Width());
 
-		Child.BoundingBox().Left() = BoundingBox().Left();
-		Child.BoundingBox().Right() = BoundingBox().Right();
+		if (AbsoluteLeftMargin + AbsoluteRightMargin > BoundingBox().Width())
+		{
+			AbsoluteRightMargin = BoundingBox().Width() - AbsoluteLeftMargin;
+		}
+
+		auto PreferredHeight = Child.ComputePreferredSize().y;
+		auto StretchHeight = Child.VerticalStretchRatio() / TotalVerticalStretchRatio * AvailableStretch;
+		auto TotalHeight = PreferredHeight + StretchHeight;
+
+		Child.BoundingBox().Left() = BoundingBox().Left() + AbsoluteLeftMargin;
+		Child.BoundingBox().Right() = BoundingBox().Right() - AbsoluteRightMargin;
 
 		Child.BoundingBox().Top() = Y;
-		Child.BoundingBox().Bottom() = Y - PreferredSize.y;
+		Child.BoundingBox().Bottom() = Y - TotalHeight;
+		Y -= TotalHeight;
 
 		Child.Layout();
-
-		Y -= PreferredSize.y;
 	});
 }

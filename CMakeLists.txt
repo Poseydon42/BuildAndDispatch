@@ -48,6 +48,7 @@ set(SOURCES
     Source/UI/Containers/VerticalContainer.h
     Source/UI/RenderBuffer.cpp
     Source/UI/RenderBuffer.h
+    Source/UI/Size.h
     Source/UI/Widget.h
     Source/UI/Widgets/Panel.cpp
     Source/UI/Widgets/Panel.h

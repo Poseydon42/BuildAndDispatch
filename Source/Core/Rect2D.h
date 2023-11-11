@@ -21,4 +21,9 @@ struct Rect2D
 
 	constexpr float& Bottom() { return Min.y; }
 	constexpr const float& Bottom() const { return Min.y; }
+
+	constexpr bool Contains(glm::vec2 Position) const
+	{
+		return Position.x >= Min.x && Position.x <= Max.x && Position.y >= Min.y && Position.y <= Max.y;
+	}
 };

@@ -18,11 +18,10 @@ glm::vec2 VerticalContainer::ComputePreferredSize() const
 		Result.x = std::max(Result.x, PreferredSize.x);
 		Result.y += PreferredSize.y;
 
-		if (!First)
-		{
-			Result.y += Spacing();
+		if (First)
 			First = false;
-		}
+		else
+			Result.y += Spacing();
 	});
 	return Result;
 }
@@ -49,9 +48,15 @@ void VerticalContainer::Layout()
 
 	// Second pass - position each child
 
+	bool First = true;
 	float Y = BoundingBox().Top();
 	ForEachChild([&](Widget& Child)
 	{
+		if (First)
+			First = false;
+		else
+			Y -= Spacing();
+
 		auto AbsoluteLeftMargin = Child.LeftMargin().GetAbsoluteValue(BoundingBox().Width());
 		auto AbsoluteRightMargin = Child.RightMargin().GetAbsoluteValue(BoundingBox().Width());
 
@@ -71,7 +76,7 @@ void VerticalContainer::Layout()
 
 		Child.BoundingBox().Top() = Y;
 		Child.BoundingBox().Bottom() = Y - TotalHeight;
-		Y -= (TotalHeight + Spacing());
+		Y -= TotalHeight;
 
 		Child.Layout();
 	});

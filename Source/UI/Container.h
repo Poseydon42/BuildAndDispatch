@@ -14,6 +14,7 @@ public:
 	void AddChild(std::unique_ptr<Widget>&& Child)
 	{
 		m_Widgets.push_back(std::move(Child));
+		m_Widgets.back()->SetParent(this);
 	}
 
 	void RemoveChild(size_t Index)
@@ -27,23 +28,19 @@ public:
 		return m_Widgets.size();
 	}
 
-	template<typename FuncType>
-	requires (std::invocable<FuncType, Widget&>)
-	void ForEachChild(FuncType&& Func)
-	{
-		std::for_each(m_Widgets.begin(), m_Widgets.end(), [&Func](std::unique_ptr<Widget>& Widget) { std::invoke(Func, *Widget); });
-	}
-
-	template<typename FuncType>
-	requires (std::invocable<FuncType, const Widget&>)
-	void ForEachChild(FuncType&& Func) const
-	{
-		std::for_each(m_Widgets.begin(), m_Widgets.end(), [&Func](const std::unique_ptr<Widget>& Widget) { std::invoke(Func, *Widget); });
-	}
-
 	virtual void Render(RenderBuffer& Buffer) const override
 	{
 		ForEachChild([&Buffer](const Widget& Widget) { Widget.Render(Buffer); });
+	}
+
+	virtual void ForEachChild(const ForEachChildCallbackType& Callback) override
+	{
+		std::ranges::for_each(m_Widgets, [&Callback](const std::unique_ptr<Widget>& Widget) { Callback(*Widget); });
+	}
+
+	virtual void ForEachChild(const ForEachChildConstCallbackType& Callback) const override
+	{
+		std::ranges::for_each(m_Widgets, [&Callback](const std::unique_ptr<Widget>& Widget) { Callback(*Widget); });
 	}
 
 private:

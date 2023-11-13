@@ -15,6 +15,16 @@ public:
 
 	virtual void Render(RenderBuffer& Buffer) const {}
 
+	using ForEachChildConstCallbackType = std::function<void(const Widget&)>;
+	using ForEachChildCallbackType = std::function<void(Widget&)>;
+
+	virtual void ForEachChild(const ForEachChildConstCallbackType& Callback) const {}
+	virtual void ForEachChild(const ForEachChildCallbackType& Callback) {}
+
+	Widget* Parent() { return m_Parent; }
+	const Widget* Parent() const { return m_Parent; }
+	void SetParent(Widget* Parent) { m_Parent = Parent; }
+
 	Rect2D& BoundingBox() { return m_BoundingBox; }
 	const Rect2D& BoundingBox() const { return m_BoundingBox; }
 
@@ -36,6 +46,8 @@ protected:
 	Widget() = default;
 
 private:
+	Widget* m_Parent = nullptr;
+
 	Rect2D m_BoundingBox;
 
 	Size1D m_LeftMargin;

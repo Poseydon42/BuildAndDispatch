@@ -15,6 +15,9 @@ public:
 
 	virtual void Render(RenderBuffer& Buffer) const {}
 
+	virtual bool OnMouseDown(MouseButton::Button Button) { return false; }
+	virtual bool OnMouseUp(MouseButton::Button Button) { return false; }
+
 	using ForEachChildConstCallbackType = std::function<void(const Widget&)>;
 	using ForEachChildCallbackType = std::function<void(Widget&)>;
 

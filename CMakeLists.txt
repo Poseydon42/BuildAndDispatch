@@ -30,6 +30,8 @@ set(SOURCES
     Source/Renderer/Renderer.h
     Source/Renderer/Shader.cpp
     Source/Renderer/Shader.h
+    Source/Renderer/Texture.cpp
+    Source/Renderer/Texture.h
     Source/Renderer/VectorIcon.cpp
     Source/Renderer/VectorIcon.h
     Source/Renderer/Window.cpp
@@ -73,6 +75,7 @@ add_executable(${TARGET_NAME} ${SOURCES})
 target_compile_definitions(${TARGET_NAME} PRIVATE WIN32_LEAN_AND_MEAN WIN32_NO_MIN_MAX)
 
 target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
+target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/stb)
 target_link_libraries(${TARGET_NAME} PRIVATE ${LIBRARIES})
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 23 CXX_EXTENSIONS OFF)

@@ -62,7 +62,7 @@ void VerticalContainer::Layout()
 
 		if (AbsoluteLeftMargin + AbsoluteRightMargin > BoundingBox().Width() - Child.ComputePreferredSize().x)
 		{
-			float Scale = (BoundingBox().Width() - Child.ComputePreferredSize().x) / (AbsoluteLeftMargin + AbsoluteRightMargin);
+			float Scale = (BoundingBox().Width() - Child.ComputePreferredSize().x) / (AbsoluteLeftMargin + AbsoluteRightMargin + 0.0000001f);
 			AbsoluteLeftMargin *= Scale;
 			AbsoluteRightMargin *= Scale;
 		}

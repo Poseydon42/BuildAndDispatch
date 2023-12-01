@@ -52,6 +52,8 @@ set(SOURCES
     Source/UI/RenderBuffer.cpp
     Source/UI/RenderBuffer.h
     Source/UI/Size.h
+    Source/UI/TextLayout.cpp
+    Source/UI/TextLayout.h
     Source/UI/Widget.h
     Source/UI/Widgets/Button.cpp
     Source/UI/Widgets/Button.h

@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include "Core/Assert.h"
+#include "Renderer/Texture.h"
 
 class Shader
 {
@@ -44,8 +45,25 @@ void Shader::SetUniform(uint32_t Index, const DataType& Value)
 }
 
 /*
+ * SCALARS
+ */
+template<>
+inline void Shader::SetUniform(uint32_t Index, const float& Value)
+{
+	Bind();
+	glUniform1fv(Index, 1, &Value);
+}
+
+/*
  * VECTORS
  */
+template<>
+inline void Shader::SetUniform(uint32_t Index, const glm::vec3& Value)
+{
+	Bind();
+	glUniform3fv(Index, 1, glm::value_ptr(Value));
+}
+
 template<>
 inline void Shader::SetUniform(uint32_t Index, const glm::vec4& Value)
 {
@@ -61,4 +79,22 @@ inline void Shader::SetUniform(uint32_t Index, const glm::mat4& Value)
 {
 	Bind();
 	glUniformMatrix4fv(Index, 1, false, glm::value_ptr(Value));
+}
+
+/*
+ * TEXTURES
+ */
+template<>
+inline void Shader::SetUniform(uint32_t Index, const Texture& Value)
+{
+	static constexpr uint32_t MaxTextureUnitCount = 80;
+	static uint32_t NextTextureUnit = 0;
+
+	glActiveTexture(NextTextureUnit);
+	glBindTexture(GL_TEXTURE0 + NextTextureUnit, Value.GetNativeHandle());
+
+	Bind();
+	glUniform1ui(Index, GL_TEXTURE0 + NextTextureUnit);
+
+	NextTextureUnit = (NextTextureUnit + 1) % MaxTextureUnitCount;
 }

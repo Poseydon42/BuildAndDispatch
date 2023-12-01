@@ -57,6 +57,8 @@ set(SOURCES
     Source/UI/Widget.h
     Source/UI/Widgets/Button.cpp
     Source/UI/Widgets/Button.h
+    Source/UI/Widgets/Label.cpp
+    Source/UI/Widgets/Label.h
     Source/UI/Widgets/Panel.cpp
     Source/UI/Widgets/Panel.h
     Source/Windows/Time.cpp

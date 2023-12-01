@@ -69,4 +69,6 @@ Panel::Panel(std::optional<std::unique_ptr<Brush>> Brush, std::optional<std::uni
 	: m_Brush(Brush.has_value() ? std::move(Brush.value()) : nullptr)
 	, m_Content(Content.has_value() ? std::move(Content.value()) : nullptr)
 {
+	if (m_Content)
+		m_Content->SetParent(this);
 }

@@ -7,8 +7,6 @@ std::unique_ptr<Button> Button::Create(std::unique_ptr<Brush> Background, std::u
 
 glm::vec2 Button::ComputePreferredSize() const
 {
-	return { 160.0f, 20.0f };
-
 	if (!m_Label)
 		return Widget::ComputePreferredSize();
 
@@ -64,4 +62,6 @@ Button::Button(std::unique_ptr<Brush> Background, std::unique_ptr<Widget> Label,
 	, m_Label(std::move(Label))
 	, m_Callback(std::move(Callback))
 {
+	if (m_Label)
+		m_Label->SetParent(this);
 }

@@ -98,4 +98,6 @@ Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std
 	, m_DebugLineShader(std::move(DebugLineShader))
 {
 	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

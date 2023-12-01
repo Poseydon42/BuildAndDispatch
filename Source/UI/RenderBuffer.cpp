@@ -1,5 +1,16 @@
 #include "RenderBuffer.h"
 
+struct UIVertex
+{
+	glm::vec2 Position;
+	glm::vec4 Color;
+};
+
+VERTEX_DESCRIPTION_BEGIN(UIVertex)
+	VERTEX_DESCRIPTION_ELEMENT(Position)
+	VERTEX_DESCRIPTION_ELEMENT(Color)
+VERTEX_DESCRIPTION_END()
+
 RenderBuffer::RenderBuffer(Renderer& Renderer)
 	: m_Renderer(Renderer)
 {
@@ -7,7 +18,7 @@ RenderBuffer::RenderBuffer(Renderer& Renderer)
 
 void RenderBuffer::Rect(Rect2D Rect, const Brush& Brush)
 {
-	std::vector<Vertex> Vertices =
+	std::vector<UIVertex> Vertices =
 	{
 		{ .Position = glm::vec2(Rect.Left() , Rect.Top()   ) / m_Renderer.FramebufferSize(), .Color = {} },
 		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .Color = {} },
@@ -17,8 +28,8 @@ void RenderBuffer::Rect(Rect2D Rect, const Brush& Brush)
 		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .Color = {} },
 		{ .Position = glm::vec2(Rect.Right(), Rect.Bottom()) / m_Renderer.FramebufferSize(), .Color = {} },
 	};
-	auto GeometryBuffer = GeometryBuffer::Create(Vertices.size(), false, Vertices);
+	auto Geometry = GeometryBuffer<UIVertex>::Create(Vertices.size(), false, Vertices);
 
 	Brush.Prepare();
-	m_Renderer.DrawWithShader(*GeometryBuffer, Brush.GetShader());
+	m_Renderer.DrawWithShader(*Geometry, Brush.GetShader());
 }

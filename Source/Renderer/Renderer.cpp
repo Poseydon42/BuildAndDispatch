@@ -4,6 +4,11 @@
 
 #include "Core/Logger.h"
 
+VERTEX_DESCRIPTION_BEGIN(DebugLineVertex)
+	VERTEX_DESCRIPTION_ELEMENT(Position)
+	VERTEX_DESCRIPTION_ELEMENT(Color)
+VERTEX_DESCRIPTION_END()
+
 std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 {
 	Window.MakeGLContextCurrent();
@@ -24,7 +29,7 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 	if (!VectorIconShader)
 		return nullptr;
 
-	auto DebugLineGeometryBuffer = GeometryBuffer::Create(s_MaxDebugLineCount * 2, true);
+	auto DebugLineGeometryBuffer = GeometryBuffer<DebugLineVertex>::Create(s_MaxDebugLineCount * 2, true);
 	if (!DebugLineGeometryBuffer)
 		return nullptr;
 
@@ -75,14 +80,6 @@ void Renderer::Draw(const VectorIcon& Icon, const glm::mat4& TransformationMatri
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(Icon.GeometryBuffer().VertexCount()));
 }
 
-void Renderer::DrawWithShader(const GeometryBuffer& Buffer, const Shader& Shader)
-{
-	Shader.Bind();
-
-	Buffer.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(Buffer.VertexCount()));
-}
-
 void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 {
 	m_DebugLineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });
@@ -94,7 +91,7 @@ glm::vec2 Renderer::FramebufferSize() const
 	return { m_Window.Width(), m_Window.Height() };
 }
 
-Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std::unique_ptr<GeometryBuffer> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)
+Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std::unique_ptr<GeometryBuffer<DebugLineVertex>> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)
 	: m_Window(Window)
 	, m_VectorIconShader(std::move(VectorIconShader))
 	, m_DebugLineGeometryBuffer(std::move(DebugLineGeometryBuffer))

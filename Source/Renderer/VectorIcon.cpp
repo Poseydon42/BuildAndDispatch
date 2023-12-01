@@ -7,6 +7,11 @@
 #include "Core/Assert.h"
 #include "Platform/File.h"
 
+VERTEX_DESCRIPTION_BEGIN(VectorIconVertex)
+	VERTEX_DESCRIPTION_ELEMENT(Position)
+	VERTEX_DESCRIPTION_ELEMENT(Color)
+VERTEX_DESCRIPTION_END()
+
 static float Sign(glm::vec2 P, glm::vec2 A, glm::vec2 B)
 {
 	return (P.x - B.x) * (A.y - B.y) - (A.x - B.x) * (P.y - B.y);
@@ -264,7 +269,7 @@ std::unique_ptr<VectorIcon> VectorIcon::LoadFromFile(std::string_view Path)
 	return CreateFromString(String);
 }
 
-const GeometryBuffer& VectorIcon::GeometryBuffer() const
+const GeometryBuffer<VectorIconVertex>& VectorIcon::GeometryBuffer() const
 {
 	return *m_GeometryBuffer;
 }
@@ -284,7 +289,7 @@ bool VectorIcon::IsPointInside(glm::vec2 Point, const glm::mat4& TransformationM
 	return false;
 }
 
-VectorIcon::VectorIcon(std::vector<glm::vec2> Vertices, std::unique_ptr<::GeometryBuffer> GeometryBuffer)
+VectorIcon::VectorIcon(std::vector<glm::vec2> Vertices, std::unique_ptr<class GeometryBuffer<VectorIconVertex>> GeometryBuffer)
 	: m_GeometryBuffer(std::move(GeometryBuffer))
 	, m_Vertices(std::move(Vertices))
 {
@@ -333,13 +338,13 @@ void VectorIconBuilder::AddPolygon(const std::vector<glm::vec2>& Vertices, glm::
 
 std::unique_ptr<VectorIcon> VectorIconBuilder::Build() const
 {
-	auto GeometryBuffer = GeometryBuffer::Create(m_Vertices.size(), false, m_Vertices);
-	if (!GeometryBuffer)
+	auto Geometry = GeometryBuffer<VectorIconVertex>::Create(m_Vertices.size(), false, m_Vertices);
+	if (!Geometry)
 		return nullptr;
 
 	std::vector<glm::vec2> Vertices(m_Vertices.size());
-	std::ranges::transform(m_Vertices, Vertices.begin(), [](const Vertex& Vertex) { return Vertex.Position; });
-	return std::unique_ptr<VectorIcon>(new VectorIcon(Vertices, std::move(GeometryBuffer)));
+	std::ranges::transform(m_Vertices, Vertices.begin(), [](const VectorIconVertex& Vertex) { return Vertex.Position; });
+	return std::unique_ptr<VectorIcon>(new VectorIcon(Vertices, std::move(Geometry)));
 }
 
 void VectorIconBuilder::AddTriangle(glm::vec2 V1, glm::vec2 V2, glm::vec2 V3, glm::vec4 Color)

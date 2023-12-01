@@ -24,7 +24,6 @@ set(SOURCES
     Source/Platform/Time.h
     Source/Renderer/Buffer.cpp
     Source/Renderer/Buffer.h
-    Source/Renderer/GeometryBuffer.cpp
     Source/Renderer/GeometryBuffer.h
     Source/Renderer/Renderer.cpp
     Source/Renderer/Renderer.h

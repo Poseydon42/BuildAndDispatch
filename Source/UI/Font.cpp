@@ -54,6 +54,7 @@ std::shared_ptr<Font> Font::Load(const std::string& Path)
 	const auto& JSONGlyphs = FontDesc["glyphs"];
 
 	std::unordered_map<IndexType, Glyph> Glyphs;
+	float WhitespaceAdvance = 0.0f;
 	for (const auto& GlyphDescription : JSONGlyphs)
 	{
 		if (!GlyphDescription.contains("unicode") || GlyphDescription["unicode"].type() != detail::value_t::number_unsigned ||
@@ -67,8 +68,14 @@ std::shared_ptr<Font> Font::Load(const std::string& Path)
 			RETURN_WITH_ERROR("Font {} does not provide 'advance' value for character '{}'", Path, Unicode);
 		auto Advance = GlyphDescription["advance"].get<float>();
 
-		// FIXME: some characters such as 'whitespace' (0x20) are not provided with texture coordinates,
-		// but we should still load them to get their 'advance' values
+		// NOTE: consider whitespace (0x20) separately as it does not have 'atlasBounds' or 'planeBounds', but we still need to get
+		//       its 'advance' property
+		if (Unicode == ' ')
+		{
+			WhitespaceAdvance = Advance;
+			continue;
+		}
+
 		if (!GlyphDescription.contains("atlasBounds") || !GlyphDescription.contains("planeBounds"))
 			continue;
 			
@@ -121,7 +128,7 @@ std::shared_ptr<Font> Font::Load(const std::string& Path)
 	if (!Atlas)
 		RETURN_WITH_ERROR("Could not load atlas texture from file {} for font {}", AtlasFilePath, Path);
 
-	return std::shared_ptr<Font>(new Font(std::move(Atlas), std::move(Glyphs), PixelsPerEm, Ascender, Descender));
+	return std::shared_ptr<Font>(new Font(std::move(Atlas), std::move(Glyphs), PixelsPerEm, Ascender, Descender, WhitespaceAdvance));
 }
 
 std::optional<Glyph> Font::GetGlyph(IndexType Character, uint32_t FontSize) const
@@ -155,6 +162,11 @@ float Font::Descender(uint32_t FontSize) const
 float Font::LineHeight(uint32_t FontSize) const
 {
 	return (m_Ascender + m_Descender) * FontSize;
+}
+
+float Font::WhitespaceAdvance(uint32_t FontSize) const
+{
+	return m_WhitespaceAdvance * FontSize;
 }
 
 float Font::ScreenPxRange(uint32_t FontSize) const

@@ -12,6 +12,12 @@ namespace TextLayout
 		float Cursor = 0.0f;
 		for (auto Char : Text)
 		{
+			if (Char == ' ')
+			{
+				Cursor += Font.WhitespaceAdvance(FontSize);
+				continue;
+			}
+
 			auto MaybeGlyph = Font.GetGlyph(Char, FontSize);
 			if (!MaybeGlyph.has_value())
 				return false;

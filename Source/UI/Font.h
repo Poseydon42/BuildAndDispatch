@@ -31,6 +31,8 @@ public:
 	float Descender(uint32_t FontSize) const;
 	float LineHeight(uint32_t FontSize) const;
 
+	float WhitespaceAdvance(uint32_t FontSize) const;
+
 	float ScreenPxRange(uint32_t FontSize) const;
 
 private:
@@ -41,11 +43,14 @@ private:
 	float m_Ascender = 0.0f;
 	float m_Descender = 0.0f;
 
-	Font(std::unique_ptr<Texture> AtlasTexture, std::unordered_map<IndexType, Glyph> Glyphs, float PixelsPerEm, float Ascender, float Descender)
+	float m_WhitespaceAdvance = 0.0f;
+
+	Font(std::unique_ptr<Texture> AtlasTexture, std::unordered_map<IndexType, Glyph> Glyphs, float PixelsPerEm, float Ascender, float Descender, float WhitespaceAdvance)
 		: m_AtlasTexture(std::move(AtlasTexture))
 		, m_Glyphs(std::move(Glyphs))
 		, m_PixelsPerEm(PixelsPerEm)
 		, m_Ascender(Ascender)
 		, m_Descender(Descender)
+		, m_WhitespaceAdvance(WhitespaceAdvance)
 	{}
 };

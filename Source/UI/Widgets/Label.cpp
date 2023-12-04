@@ -9,7 +9,7 @@ std::unique_ptr<Label> Label::Create(std::string Text, uint32_t FontSize, std::s
 
 glm::vec2 Label::ComputePreferredSize() const
 {
-	auto Result = TextLayout::Measure(m_Text, m_FontSize, *m_Font) * glm::vec2(1.0f, 2.0f);
+	auto Result = TextLayout::Measure(m_Text, m_FontSize, *m_Font);
 	return Result;
 }
 

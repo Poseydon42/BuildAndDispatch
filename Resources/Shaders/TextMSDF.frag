@@ -24,6 +24,6 @@ void main()
 
     vec4 ForegroundColor = vec4(u_Color, 1.0);
     vec4 BackgroundColor = vec4(0.0);
-    o_Color = mix(BackgroundColor, ForegroundColor, Opacity);
+    o_Color = vec4(u_Color, Opacity); //mix(BackgroundColor, ForegroundColor, Opacity);
 }
 

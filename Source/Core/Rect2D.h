@@ -9,6 +9,7 @@ struct Rect2D
 
 	constexpr float Width() const { return Max.x - Min.x; }
 	constexpr float Height() const { return Max.y - Min.y; }
+	constexpr glm::vec2 Dimensions() const { return { Width(), Height() }; }
 
 	constexpr float& Left() { return Min.x; }
 	constexpr const float& Left() const { return Min.x; }

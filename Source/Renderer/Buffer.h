@@ -22,6 +22,8 @@ public:
 private:
 	GLuint m_Buffer;
 	size_t m_Size;
+	
+	mutable std::optional<void*> m_MappedAddress;
 
 	Buffer(GLuint Buffer, size_t Size);
 };

@@ -18,6 +18,9 @@ std::unique_ptr<Buffer> Buffer::Create(size_t Size, std::optional<void*> Data, G
 
 void* Buffer::Map(bool IsReading, bool IsWriting) const
 {
+	if (m_MappedAddress.has_value())
+		return *m_MappedAddress;
+
 	Bind(GL_COPY_WRITE_BUFFER);
 
 	GLenum Access = 0;
@@ -27,13 +30,15 @@ void* Buffer::Map(bool IsReading, bool IsWriting) const
 		Access = GL_WRITE_ONLY;
 	if (IsReading && IsWriting)
 		Access = GL_READ_WRITE;
-	return glMapBuffer(GL_COPY_WRITE_BUFFER, Access);
+	m_MappedAddress = glMapBuffer(GL_COPY_WRITE_BUFFER, Access);
+	return *m_MappedAddress;
 }
 
 void Buffer::Unmap() const
 {
 	Bind(GL_COPY_WRITE_BUFFER);
 	glUnmapBuffer(GL_COPY_WRITE_BUFFER);
+	m_MappedAddress = std::nullopt;
 }
 
 void Buffer::Bind(GLenum Target) const

@@ -51,7 +51,7 @@ void Renderer::BeginFrame()
 	m_DebugLineGeometryBuffer->Reset();
 }
 
-void Renderer::EndFrame()
+void Renderer::Flush()
 {
 	m_DebugLineGeometryBuffer->Flush();
 
@@ -60,6 +60,13 @@ void Renderer::EndFrame()
 
 	m_DebugLineGeometryBuffer->Bind();
 	glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_DebugLineGeometryBuffer->VertexCount()));
+
+	m_DebugLineGeometryBuffer->Reset();
+}
+
+void Renderer::EndFrame()
+{
+	Flush();
 
 	m_Window.SwapBuffers();
 }

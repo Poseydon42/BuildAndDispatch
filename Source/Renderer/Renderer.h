@@ -20,6 +20,8 @@ public:
 	
 	void BeginFrame();
 
+	void Flush();
+
 	void EndFrame();
 
 	void SetViewProjectionMatrix(const glm::mat4& Matrix);

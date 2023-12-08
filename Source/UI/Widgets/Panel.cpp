@@ -46,6 +46,8 @@ void Panel::Layout()
 
 void Panel::Render(RenderBuffer& Buffer) const
 {
+	Widget::Render(Buffer);
+
 	if (m_Brush)
 		Buffer.Rect(BoundingBox(), *m_Brush);
 

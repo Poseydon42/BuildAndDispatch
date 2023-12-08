@@ -30,6 +30,7 @@ public:
 
 	virtual void Render(RenderBuffer& Buffer) const override
 	{
+		Widget::Render(Buffer);
 		ForEachChild([&Buffer](const Widget& Widget) { Widget.Render(Buffer); });
 	}
 

@@ -12,6 +12,8 @@ public:
 
 	void Rect(Rect2D Rect, const Brush& Brush);
 
+	void Debug_RectOutline(Rect2D Rect, glm::vec3 Color);
+
 	void Text(std::string_view Text, uint32_t FontSize, const Font& Font, Rect2D Rect);
 
 private:

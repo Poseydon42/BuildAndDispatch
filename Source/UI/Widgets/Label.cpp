@@ -15,6 +15,8 @@ glm::vec2 Label::ComputePreferredSize() const
 
 void Label::Render(RenderBuffer& Buffer) const
 {
+	Widget::Render(Buffer);
+
 	auto TextSize = TextLayout::Measure(m_Text, m_FontSize, *m_Font);
 
 	Rect2D TextRect;

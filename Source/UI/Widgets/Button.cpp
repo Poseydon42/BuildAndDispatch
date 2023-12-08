@@ -24,6 +24,8 @@ void Button::Layout()
 
 void Button::Render(RenderBuffer& Buffer) const
 {
+	Widget::Render(Buffer);
+
 	if (m_Background)
 		Buffer.Rect(BoundingBox(), *m_Background);
 

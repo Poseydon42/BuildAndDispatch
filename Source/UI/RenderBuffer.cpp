@@ -38,6 +38,19 @@ void RenderBuffer::Rect(Rect2D Rect, const Brush& Brush)
 	m_Renderer.DrawWithShader(*Geometry, Brush.GetShader());
 }
 
+void RenderBuffer::Debug_RectOutline(Rect2D Rect, glm::vec3 Color)
+{
+	auto TopLeft = glm::vec2(Rect.Left(), Rect.Top()) / m_Renderer.FramebufferSize() * 2.0f - 1.0f;
+	auto TopRight = glm::vec2(Rect.Right(), Rect.Top()) / m_Renderer.FramebufferSize() * 2.0f - 1.0f;
+	auto BottomRight = glm::vec2(Rect.Right(), Rect.Bottom()) / m_Renderer.FramebufferSize() * 2.0f - 1.0f;
+	auto BottomLeft = glm::vec2(Rect.Left(), Rect.Bottom()) / m_Renderer.FramebufferSize() * 2.0f - 1.0f;
+
+	m_Renderer.Debug_PushLine(TopLeft, TopRight, Color);
+	m_Renderer.Debug_PushLine(TopRight, BottomRight, Color);
+	m_Renderer.Debug_PushLine(BottomRight, BottomLeft, Color);
+	m_Renderer.Debug_PushLine(BottomLeft, TopLeft, Color);
+}
+
 struct TextVertex
 {
 	glm::vec2 Position;

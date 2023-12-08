@@ -13,7 +13,12 @@ public:
 
 	virtual void Layout() {}
 
-	virtual void Render(RenderBuffer& Buffer) const {}
+	virtual void Render(RenderBuffer& Buffer) const
+	{
+#ifdef UI_DEBUG
+		Buffer.Debug_RectOutline(BoundingBox(), glm::vec3(0.0f, 1.0f, 0.0f));
+#endif
+	}
 
 	virtual bool OnMouseDown(MouseButton::Button Button) { return false; }
 	virtual bool OnMouseUp(MouseButton::Button Button) { return false; }

@@ -45,6 +45,8 @@ set(SOURCES
     Source/UI/Brushes/SolidColorBrush.cpp
     Source/UI/Brushes/SolidColorBrush.h
     Source/UI/Container.h
+    Source/UI/Containers/CanvasContainer.cpp
+    Source/UI/Containers/CanvasContainer.h
     Source/UI/Containers/StackContainer.cpp
     Source/UI/Containers/StackContainer.h
     Source/UI/Font.cpp

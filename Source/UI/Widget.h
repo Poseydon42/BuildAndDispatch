@@ -9,6 +9,11 @@ class Widget
 public:
 	virtual ~Widget() = default;
 
+	static std::unique_ptr<Widget> Create()
+	{
+		return std::unique_ptr<Widget>(new Widget);
+	}
+
 	virtual glm::vec2 ComputePreferredSize() const { return {}; }
 
 	virtual void Layout() {}

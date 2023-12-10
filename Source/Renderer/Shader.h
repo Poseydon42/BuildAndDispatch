@@ -58,6 +58,13 @@ inline void Shader::SetUniform(uint32_t Index, const float& Value)
  * VECTORS
  */
 template<>
+inline void Shader::SetUniform(uint32_t Index, const glm::vec2& Value)
+{
+	Bind();
+	glUniform2fv(Index, 1, glm::value_ptr(Value));
+}
+
+template<>
 inline void Shader::SetUniform(uint32_t Index, const glm::vec3& Value)
 {
 	Bind();

@@ -122,6 +122,7 @@ int GameLoop::Run()
 		for (const auto& Layer : m_Layers)
 		{
 			Layer->Render(*m_Renderer, m_World);
+			m_Renderer->Flush();
 		}
 
 		m_Renderer->EndFrame();

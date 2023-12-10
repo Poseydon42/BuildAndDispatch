@@ -7,7 +7,7 @@ class Button : public Widget
 public:
 	using ButtonCallbackType = std::function<void(bool IsPress)>;
 
-	static std::unique_ptr<Button> Create(std::unique_ptr<Brush> Background, std::unique_ptr<Widget> Label, ButtonCallbackType Callback = {});
+	static std::unique_ptr<Button> Create(std::unique_ptr<Widget> Label, ButtonCallbackType Callback = {});
 
 	virtual glm::vec2 ComputePreferredSize() const override;
 
@@ -22,9 +22,8 @@ public:
 	virtual void ForEachChild(const ForEachChildConstCallbackType& Callback) const override;
 
 private:
-	Button(std::unique_ptr<Brush> Background, std::unique_ptr<Widget> Label, ButtonCallbackType Callback);
+	Button(std::unique_ptr<Widget> Label, ButtonCallbackType Callback);
 
-	std::unique_ptr<Brush> m_Background;
 	std::unique_ptr<Widget> m_Label;
 	ButtonCallbackType m_Callback;
 };

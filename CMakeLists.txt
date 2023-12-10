@@ -41,9 +41,6 @@ set(SOURCES
     Source/Simulation/Train.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
-    Source/UI/Brush.h
-    Source/UI/Brushes/SolidColorBrush.cpp
-    Source/UI/Brushes/SolidColorBrush.h
     Source/UI/Container.h
     Source/UI/Containers/CanvasContainer.cpp
     Source/UI/Containers/CanvasContainer.h

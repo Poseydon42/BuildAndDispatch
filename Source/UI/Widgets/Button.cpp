@@ -1,8 +1,8 @@
 #include "Button.h"
 
-std::unique_ptr<Button> Button::Create(std::unique_ptr<Brush> Background, std::unique_ptr<Widget> Label, ButtonCallbackType Callback)
+std::unique_ptr<Button> Button::Create(std::unique_ptr<Widget> Label, ButtonCallbackType Callback)
 {
-	return std::unique_ptr<Button>(new Button(std::move(Background), std::move(Label), std::move(Callback)));
+	return std::unique_ptr<Button>(new Button(std::move(Label), std::move(Callback)));
 }
 
 glm::vec2 Button::ComputePreferredSize() const
@@ -25,9 +25,6 @@ void Button::Layout()
 void Button::Render(RenderBuffer& Buffer) const
 {
 	Widget::Render(Buffer);
-
-	if (m_Background)
-		Buffer.Rect(BoundingBox(), *m_Background);
 
 	if (m_Label)
 		m_Label->Render(Buffer);
@@ -59,9 +56,8 @@ void Button::ForEachChild(const ForEachChildConstCallbackType& Callback) const
 		Callback(*m_Label);
 }
 
-Button::Button(std::unique_ptr<Brush> Background, std::unique_ptr<Widget> Label, ButtonCallbackType Callback)
-	: m_Background(std::move(Background))
-	, m_Label(std::move(Label))
+Button::Button(std::unique_ptr<Widget> Label, ButtonCallbackType Callback)
+	: m_Label(std::move(Label))
 	, m_Callback(std::move(Callback))
 {
 	if (m_Label)

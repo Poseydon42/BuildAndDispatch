@@ -5,37 +5,44 @@
 struct UIVertex
 {
 	glm::vec2 Position;
-	glm::vec4 Color;
+	glm::vec2 TextureCoordinates;
 };
 
 VERTEX_DESCRIPTION_BEGIN(UIVertex)
 	VERTEX_DESCRIPTION_ELEMENT(Position)
-	VERTEX_DESCRIPTION_ELEMENT(Color)
+	VERTEX_DESCRIPTION_ELEMENT(TextureCoordinates)
 VERTEX_DESCRIPTION_END()
 
 RenderBuffer::RenderBuffer(Renderer& Renderer)
 	: m_Renderer(Renderer)
 {
+	m_RectShader = Shader::Create("Resources/Shaders/UIRect.vert", "Resources/Shaders/UIRect.frag");
 	m_TextShader = Shader::Create("Resources/Shaders/TextMSDF.vert", "Resources/Shaders/TextMSDF.frag");
 	BD_ASSERT(m_TextShader);
 }
 
-void RenderBuffer::Rect(Rect2D Rect, const Brush& Brush)
+void RenderBuffer::Rect(Rect2D Rect, glm::vec4 Color, float CornerRadius, glm::vec4 BorderColor, float BorderThickness)
 {
 	std::vector<UIVertex> Vertices =
 	{
-		{ .Position = glm::vec2(Rect.Left() , Rect.Top()   ) / m_Renderer.FramebufferSize(), .Color = {} },
-		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .Color = {} },
-		{ .Position = glm::vec2(Rect.Left() , Rect.Bottom()) / m_Renderer.FramebufferSize(), .Color = {} },
+		{ .Position = glm::vec2(Rect.Left() , Rect.Top()   ) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 0.0f, 1.0f } },
+		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 1.0f, 1.0f } },
+		{ .Position = glm::vec2(Rect.Left() , Rect.Bottom()) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 0.0f, 0.0f } },
 
-		{ .Position = glm::vec2(Rect.Left() , Rect.Bottom()) / m_Renderer.FramebufferSize(), .Color = {} },
-		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .Color = {} },
-		{ .Position = glm::vec2(Rect.Right(), Rect.Bottom()) / m_Renderer.FramebufferSize(), .Color = {} },
+		{ .Position = glm::vec2(Rect.Left() , Rect.Bottom()) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 0.0f, 0.0f } },
+		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 1.0f, 1.0f } },
+		{ .Position = glm::vec2(Rect.Right(), Rect.Bottom()) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 1.0f, 0.0f } },
 	};
 	auto Geometry = GeometryBuffer<UIVertex>::Create(Vertices.size(), false, Vertices);
 
-	Brush.Prepare();
-	m_Renderer.DrawWithShader(*Geometry, Brush.GetShader());
+	m_RectShader->SetUniform("u_Color", Color);
+	m_RectShader->SetUniform("u_BorderColor", BorderColor);
+	m_RectShader->SetUniform("u_FramebufferDimensions", m_Renderer.FramebufferSize());
+	m_RectShader->SetUniform("u_RectDimensions", Rect.Dimensions());
+	m_RectShader->SetUniform("u_CornerRadius", CornerRadius);
+	m_RectShader->SetUniform("u_BorderThickness", BorderThickness);
+
+	m_Renderer.DrawWithShader(*Geometry, *m_RectShader);
 }
 
 void RenderBuffer::Debug_RectOutline(Rect2D Rect, glm::vec3 Color)

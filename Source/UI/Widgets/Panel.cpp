@@ -1,8 +1,8 @@
 #include "Panel.h"
 
-std::unique_ptr<Panel> Panel::Create(std::optional<std::unique_ptr<Brush>> Brush, std::optional<std::unique_ptr<Widget>> Content)
+std::unique_ptr<Panel> Panel::Create(std::optional<std::unique_ptr<Widget>> Content)
 {
-	return std::unique_ptr<Panel>(new Panel(std::move(Brush), std::move(Content)));
+	return std::unique_ptr<Panel>(new Panel(std::move(Content)));
 }
 
 glm::vec2 Panel::ComputePreferredSize() const
@@ -48,9 +48,6 @@ void Panel::Render(RenderBuffer& Buffer) const
 {
 	Widget::Render(Buffer);
 
-	if (m_Brush)
-		Buffer.Rect(BoundingBox(), *m_Brush);
-
 	if (m_Content)
 		m_Content->Render(Buffer);
 }
@@ -67,9 +64,8 @@ void Panel::ForEachChild(const ForEachChildConstCallbackType& Callback) const
 		Callback(*m_Content);
 }
 
-Panel::Panel(std::optional<std::unique_ptr<Brush>> Brush, std::optional<std::unique_ptr<Widget>> Content)
-	: m_Brush(Brush.has_value() ? std::move(Brush.value()) : nullptr)
-	, m_Content(Content.has_value() ? std::move(Content.value()) : nullptr)
+Panel::Panel(std::optional<std::unique_ptr<Widget>> Content)
+	: m_Content(Content.has_value() ? std::move(Content.value()) : nullptr)
 {
 	if (m_Content)
 		m_Content->SetParent(this);

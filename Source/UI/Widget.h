@@ -9,21 +9,13 @@ class Widget
 public:
 	virtual ~Widget() = default;
 
-	static std::unique_ptr<Widget> Create()
-	{
-		return std::unique_ptr<Widget>(new Widget);
-	}
+	static std::unique_ptr<Widget> Create();
 
 	virtual glm::vec2 ComputePreferredSize() const { return {}; }
 
 	virtual void Layout() {}
 
-	virtual void Render(RenderBuffer& Buffer) const
-	{
-#ifdef UI_DEBUG
-		Buffer.Debug_RectOutline(BoundingBox(), glm::vec3(0.0f, 1.0f, 0.0f));
-#endif
-	}
+	virtual void Render(RenderBuffer& Buffer) const;
 
 	virtual bool OnMouseDown(MouseButton::Button Button) { return false; }
 	virtual bool OnMouseUp(MouseButton::Button Button) { return false; }
@@ -55,6 +47,16 @@ public:
 	float& HorizontalStretchRatio() { return m_HorizontalStretchRatio; }
 	const float& HorizontalStretchRatio() const { return m_HorizontalStretchRatio; }
 
+	float& BorderThickness() { return m_BorderThickness; }
+	const float& BorderThickness() const { return m_BorderThickness; }
+	float& CornerRadius() { return m_CornerRadius; }
+	const float& CornerRadius() const { return m_CornerRadius; }
+
+	glm::vec4& BackgroundColor() { return m_BackgroundColor; }
+	const glm::vec4& BackgroundColor() const { return m_BackgroundColor; }
+	glm::vec4& BorderColor() { return m_BorderColor; }
+	const glm::vec4& BorderColor() const { return m_BorderColor; }
+
 protected:
 	Widget() = default;
 
@@ -70,4 +72,10 @@ private:
 
 	float m_VerticalStretchRatio = 0.0f;
 	float m_HorizontalStretchRatio = 0.0f;
+
+	float m_BorderThickness = 0.0f;
+	float m_CornerRadius = 0.0f;
+
+	glm::vec4 m_BackgroundColor = glm::vec4(0.0f);
+	glm::vec4 m_BorderColor = glm::vec4(1.0);
 };

@@ -23,6 +23,9 @@ void main()
     vec2 FragmentLocation = (i_TextureCoordinates * 2.0 - 1.0) * HalfRectDimensions;
     float SDF = RectangleSDF(FragmentLocation, HalfRectDimensions, u_CornerRadius);
 
-    float IsBorder = step(-u_BorderThickness, SDF);
-    o_Color = mix(u_Color, u_BorderColor, IsBorder) * step(0.0, -SDF);
+    const float SmoothingWidth = 2.0;
+    const float HalfSmoothingWidth = 0.5 * SmoothingWidth;
+
+    float IsBorder = smoothstep(-u_BorderThickness - HalfSmoothingWidth, -u_BorderThickness + HalfSmoothingWidth, SDF);
+    o_Color = mix(u_Color, u_BorderColor, IsBorder) * smoothstep(-HalfSmoothingWidth, HalfSmoothingWidth, -SDF);
 }

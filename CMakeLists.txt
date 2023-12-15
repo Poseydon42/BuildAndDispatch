@@ -53,6 +53,7 @@ set(SOURCES
     Source/UI/Size.h
     Source/UI/TextLayout.cpp
     Source/UI/TextLayout.h
+    Source/UI/Widget.cpp
     Source/UI/Widget.h
     Source/UI/Widgets/Button.cpp
     Source/UI/Widgets/Button.h

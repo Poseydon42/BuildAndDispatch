@@ -12,9 +12,9 @@ void Widget::Render(RenderBuffer& Buffer) const
 		return glm::dot(Color, Color) >= 0.001f;
 	};
 
-	if (IsColorNonZero(m_BackgroundColor) || (IsColorNonZero(m_BorderColor) && m_BorderThickness > 0.0f))
+	if (IsColorNonZero(m_Style.BackgroundColor) || (IsColorNonZero(m_Style.BorderColor) && m_Style.BorderThickness > 0.0f))
 	{
-		Buffer.Rect(BoundingBox(), m_BackgroundColor, m_CornerRadius, m_BorderColor, m_BorderThickness);
+		Buffer.Rect(BoundingBox(), m_Style.BackgroundColor, m_Style.CornerRadius, m_Style.BorderColor, m_Style.BorderThickness);
 	}
 
 #ifdef UI_DEBUG

@@ -19,8 +19,8 @@ void Panel::Layout()
 
 	auto ContentPreferredSize = m_Content->ComputePreferredSize();
 
-	auto LeftMargin   = m_Content->LeftMargin()  .GetAbsoluteValue(BoundingBox().Width() );
-	auto RightMargin  = m_Content->RightMargin() .GetAbsoluteValue(BoundingBox().Width() );
+	auto LeftMargin   = m_Content->Style().LeftMargin .GetAbsoluteValue(BoundingBox().Width());
+	auto RightMargin  = m_Content->Style().RightMargin.GetAbsoluteValue(BoundingBox().Width());
 	if (LeftMargin + ContentPreferredSize.x + RightMargin > BoundingBox().Width())
 	{
 		float Scale = (BoundingBox().Width() - ContentPreferredSize.x) / (LeftMargin + RightMargin);
@@ -30,8 +30,8 @@ void Panel::Layout()
 	m_Content->BoundingBox().Left() = BoundingBox().Left() + LeftMargin;
 	m_Content->BoundingBox().Right() = BoundingBox().Right() - RightMargin;
 
-	auto TopMargin = m_Content->TopMargin().GetAbsoluteValue(BoundingBox().Height());
-	auto BottomMargin = m_Content->BottomMargin().GetAbsoluteValue(BoundingBox().Height());
+	auto TopMargin = m_Content->Style().TopMargin.GetAbsoluteValue(BoundingBox().Height());
+	auto BottomMargin = m_Content->Style().BottomMargin.GetAbsoluteValue(BoundingBox().Height());
 	if (TopMargin + ContentPreferredSize.y + BottomMargin > BoundingBox().Height())
 	{
 		float Scale = (BoundingBox().Height() - ContentPreferredSize.y) / (TopMargin + BottomMargin);

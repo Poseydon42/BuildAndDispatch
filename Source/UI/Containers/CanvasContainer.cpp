@@ -21,10 +21,10 @@ void CanvasContainer::Layout()
 	{
 		auto ChildSize = Child.ComputePreferredSize();
 
-		auto LeftMargin = Child.LeftMargin().GetAbsoluteValue(BoundingBox().Width());
-		auto RightMargin = Child.RightMargin().GetAbsoluteValue(BoundingBox().Width());
-		auto TopMargin = Child.TopMargin().GetAbsoluteValue(BoundingBox().Height());
-		auto BottomMargin = Child.BottomMargin().GetAbsoluteValue(BoundingBox().Height());
+		auto LeftMargin = Child.Style().LeftMargin.GetAbsoluteValue(BoundingBox().Width());
+		auto RightMargin = Child.Style().RightMargin.GetAbsoluteValue(BoundingBox().Width());
+		auto TopMargin = Child.Style().TopMargin.GetAbsoluteValue(BoundingBox().Height());
+		auto BottomMargin = Child.Style().BottomMargin.GetAbsoluteValue(BoundingBox().Height());
 
 		if (LeftMargin + ChildSize.x + RightMargin > BoundingBox().Width())
 		{

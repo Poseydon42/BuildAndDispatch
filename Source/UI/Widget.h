@@ -4,6 +4,23 @@
 #include "UI/RenderBuffer.h"
 #include "UI/Size.h"
 
+struct WidgetStyle
+{
+	Size1D LeftMargin;
+	Size1D RightMargin;
+	Size1D TopMargin;
+	Size1D BottomMargin;
+
+	float VerticalStretchRatio = 0.0f;
+	float HorizontalStretchRatio = 0.0f;
+
+	float BorderThickness = 0.0f;
+	float CornerRadius = 0.0f;
+
+	glm::vec4 BackgroundColor = glm::vec4(0.0f);
+	glm::vec4 BorderColor = glm::vec4(1.0);
+};
+
 class Widget
 {
 public:
@@ -33,29 +50,8 @@ public:
 	Rect2D& BoundingBox() { return m_BoundingBox; }
 	const Rect2D& BoundingBox() const { return m_BoundingBox; }
 
-	Size1D& LeftMargin() { return m_LeftMargin; }
-	const Size1D& LeftMargin() const { return m_LeftMargin; }
-	Size1D& RightMargin() { return m_RightMargin; }
-	const Size1D& RightMargin() const { return m_RightMargin; }
-	Size1D& TopMargin() { return m_TopMargin; }
-	const Size1D& TopMargin() const { return m_TopMargin; }
-	Size1D& BottomMargin() { return m_BottomMargin; }
-	const Size1D& BottomMargin() const { return m_BottomMargin; }
-
-	float& VerticalStretchRatio() { return m_VerticalStretchRatio; }
-	const float& VerticalStretchRatio() const { return m_VerticalStretchRatio; }
-	float& HorizontalStretchRatio() { return m_HorizontalStretchRatio; }
-	const float& HorizontalStretchRatio() const { return m_HorizontalStretchRatio; }
-
-	float& BorderThickness() { return m_BorderThickness; }
-	const float& BorderThickness() const { return m_BorderThickness; }
-	float& CornerRadius() { return m_CornerRadius; }
-	const float& CornerRadius() const { return m_CornerRadius; }
-
-	glm::vec4& BackgroundColor() { return m_BackgroundColor; }
-	const glm::vec4& BackgroundColor() const { return m_BackgroundColor; }
-	glm::vec4& BorderColor() { return m_BorderColor; }
-	const glm::vec4& BorderColor() const { return m_BorderColor; }
+	WidgetStyle& Style() { return m_Style; }
+	const WidgetStyle& Style() const { return m_Style; }
 
 protected:
 	Widget() = default;
@@ -65,17 +61,5 @@ private:
 
 	Rect2D m_BoundingBox;
 
-	Size1D m_LeftMargin;
-	Size1D m_RightMargin;
-	Size1D m_TopMargin;
-	Size1D m_BottomMargin;
-
-	float m_VerticalStretchRatio = 0.0f;
-	float m_HorizontalStretchRatio = 0.0f;
-
-	float m_BorderThickness = 0.0f;
-	float m_CornerRadius = 0.0f;
-
-	glm::vec4 m_BackgroundColor = glm::vec4(0.0f);
-	glm::vec4 m_BorderColor = glm::vec4(1.0);
+	WidgetStyle m_Style;
 };

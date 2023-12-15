@@ -62,7 +62,7 @@ void StackContainer::Layout()
 	ForEachChild([&](const Widget& Child)
 	{
 		TotalPreferredLength += Child.ComputePreferredSize()[MajorCoordinateIndex];
-		TotalStretchRatio += m_Direction == Direction::Horizontal ? Child.HorizontalStretchRatio() : Child.VerticalStretchRatio();
+		TotalStretchRatio += m_Direction == Direction::Horizontal ? Child.Style().HorizontalStretchRatio : Child.Style().VerticalStretchRatio;
 	});
 	TotalPreferredLength += Spacing() * (ChildCount() - 1);
 
@@ -82,8 +82,8 @@ void StackContainer::Layout()
 			NextCoordinate += m_Direction == Direction::Horizontal ? Spacing() : -Spacing();
 
 		auto BoundingBoxPerpendicularLength = m_Direction == Direction::Horizontal ? BoundingBox().Height() : BoundingBox().Width();
-		auto AbsoluteLeftOrTopMargin = (m_Direction == Direction::Horizontal ? Child.TopMargin() : Child.LeftMargin()).GetAbsoluteValue(BoundingBoxPerpendicularLength);
-		auto AbsoluteRightOrBottomMargin = (m_Direction == Direction::Horizontal ? Child.BottomMargin() : Child.RightMargin()).GetAbsoluteValue(BoundingBoxPerpendicularLength);
+		auto AbsoluteLeftOrTopMargin = (m_Direction == Direction::Horizontal ? Child.Style().TopMargin : Child.Style().LeftMargin).GetAbsoluteValue(BoundingBoxPerpendicularLength);
+		auto AbsoluteRightOrBottomMargin = (m_Direction == Direction::Horizontal ? Child.Style().BottomMargin : Child.Style().RightMargin).GetAbsoluteValue(BoundingBoxPerpendicularLength);
 
 		if (AbsoluteLeftOrTopMargin + AbsoluteRightOrBottomMargin > BoundingBoxPerpendicularLength - Child.ComputePreferredSize()[MinorCoordinateIndex])
 		{
@@ -93,7 +93,7 @@ void StackContainer::Layout()
 		}
 
 		auto PreferredLength = Child.ComputePreferredSize()[MajorCoordinateIndex];
-		auto StretchLength = (m_Direction == Direction::Horizontal ? Child.HorizontalStretchRatio() : Child.VerticalStretchRatio()) / TotalStretchRatio * AvailableStretch;
+		auto StretchLength = (m_Direction == Direction::Horizontal ? Child.Style().HorizontalStretchRatio : Child.Style().VerticalStretchRatio) / TotalStretchRatio * AvailableStretch;
 		auto TotalLength = PreferredLength + StretchLength;
 
 		switch (m_Direction)

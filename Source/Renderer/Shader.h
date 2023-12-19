@@ -94,11 +94,11 @@ inline void Shader::SetUniform(uint32_t Index, const glm::mat4& Value)
 template<>
 inline void Shader::SetUniform(uint32_t Index, const Texture& Value)
 {
-	static constexpr uint32_t MaxTextureUnitCount = 80;
+	static constexpr uint32_t MaxTextureUnitCount = 16;
 	static uint32_t NextTextureUnit = 0;
 
 	glActiveTexture(NextTextureUnit);
-	glBindTexture(GL_TEXTURE0 + NextTextureUnit, Value.GetNativeHandle());
+	glBindTexture(GL_TEXTURE_2D, Value.GetNativeHandle());
 
 	Bind();
 	glUniform1ui(Index, GL_TEXTURE0 + NextTextureUnit);

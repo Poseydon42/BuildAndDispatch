@@ -17,23 +17,30 @@ RenderBuffer::RenderBuffer(Renderer& Renderer)
 	: m_Renderer(Renderer)
 {
 	m_RectShader = Shader::Create("Resources/Shaders/UIRect.vert", "Resources/Shaders/UIRect.frag");
+	m_TextureRectShader = Shader::Create("Resources/Shaders/UITextureRect.vert", "Resources/Shaders/UITextureRect.frag");
 	m_TextShader = Shader::Create("Resources/Shaders/TextMSDF.vert", "Resources/Shaders/TextMSDF.frag");
 	BD_ASSERT(m_TextShader);
 }
 
-void RenderBuffer::Rect(Rect2D Rect, glm::vec4 Color, float CornerRadius, glm::vec4 BorderColor, float BorderThickness)
+std::unique_ptr<GeometryBuffer<UIVertex>> CreateQuad(Rect2D Rect, glm::vec2 FramebufferSize)
 {
 	std::vector<UIVertex> Vertices =
 	{
-		{ .Position = glm::vec2(Rect.Left() , Rect.Top()   ) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 0.0f, 1.0f } },
-		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 1.0f, 1.0f } },
-		{ .Position = glm::vec2(Rect.Left() , Rect.Bottom()) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 0.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Left() , Rect.Top()) / FramebufferSize, .TextureCoordinates = { 0.0f, 1.0f } },
+		{.Position = glm::vec2(Rect.Right(), Rect.Top()) / FramebufferSize, .TextureCoordinates = { 1.0f, 1.0f } },
+		{.Position = glm::vec2(Rect.Left() , Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 0.0f, 0.0f } },
 
-		{ .Position = glm::vec2(Rect.Left() , Rect.Bottom()) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 0.0f, 0.0f } },
-		{ .Position = glm::vec2(Rect.Right(), Rect.Top()   ) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 1.0f, 1.0f } },
-		{ .Position = glm::vec2(Rect.Right(), Rect.Bottom()) / m_Renderer.FramebufferSize(), .TextureCoordinates = { 1.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Left() , Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 0.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Right(), Rect.Top()) / FramebufferSize, .TextureCoordinates = { 1.0f, 1.0f } },
+		{.Position = glm::vec2(Rect.Right(), Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 1.0f, 0.0f } },
 	};
-	auto Geometry = GeometryBuffer<UIVertex>::Create(Vertices.size(), false, Vertices);
+
+	return GeometryBuffer<UIVertex>::Create(Vertices.size(), false, Vertices);;
+}
+
+void RenderBuffer::Rect(Rect2D Rect, glm::vec4 Color, float CornerRadius, glm::vec4 BorderColor, float BorderThickness)
+{
+	auto Geometry = CreateQuad(Rect, m_Renderer.FramebufferSize());
 
 	m_RectShader->SetUniform("u_Color", Color);
 	m_RectShader->SetUniform("u_BorderColor", BorderColor);
@@ -43,6 +50,15 @@ void RenderBuffer::Rect(Rect2D Rect, glm::vec4 Color, float CornerRadius, glm::v
 	m_RectShader->SetUniform("u_BorderThickness", BorderThickness);
 
 	m_Renderer.DrawWithShader(*Geometry, *m_RectShader);
+}
+
+void RenderBuffer::TextureRect(Rect2D Rect, const Texture& Texture)
+{
+	auto Geometry = CreateQuad(Rect, m_Renderer.FramebufferSize());
+
+	m_TextureRectShader->SetUniform("u_Texture", Texture);
+
+	m_Renderer.DrawWithShader(*Geometry, *m_TextureRectShader);
 }
 
 void RenderBuffer::Debug_RectOutline(Rect2D Rect, glm::vec3 Color)

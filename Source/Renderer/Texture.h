@@ -8,7 +8,7 @@
 class Texture
 {
 public:
-	static std::unique_ptr<Texture> Load(const std::string& Path);
+	static std::unique_ptr<Texture> Load(std::string_view Path);
 
 	glm::ivec2 Dimensions() { return m_Dimensions; }
 

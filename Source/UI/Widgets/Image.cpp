@@ -9,7 +9,7 @@ std::unique_ptr<Image> Image::LoadFromFile(std::string_view Path)
 
 glm::vec2 Image::ComputePreferredSize() const
 {
-	return {}; //return { m_Texture->Dimensions() };
+	return { m_Texture->Dimensions() };
 }
 
 void Image::Render(RenderBuffer& Buffer) const

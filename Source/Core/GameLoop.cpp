@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "Core/Logger.h"
+#include "Layer/GameUILayer.h"
 #include "Layer/TrackLayer.h"
 #include "Platform/Time.h"
 
@@ -138,6 +139,7 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 	, m_Renderer(std::move(Renderer))
 {
 	m_Layers.push_back(TrackLayer::Create());
+	m_Layers.push_back(std::make_unique<GameUILayer>());
 
 	GenerateDebugWorld(m_World);
 

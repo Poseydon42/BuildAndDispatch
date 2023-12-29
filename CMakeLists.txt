@@ -17,6 +17,8 @@ set(SOURCES
     Source/Core/Main.cpp
     Source/Core/Rect2D.h
     Source/Core/Transform.h
+    Source/Layer/GameUILayer.cpp
+    Source/Layer/GameUILayer.h
     Source/Layer/TrackLayer.cpp
     Source/Layer/TrackLayer.h
     Source/Layer/Layer.h

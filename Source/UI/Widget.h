@@ -28,7 +28,7 @@ public:
 
 	static std::unique_ptr<Widget> Create();
 
-	virtual glm::vec2 ComputePreferredSize() const { return {}; }
+	glm::vec2 ComputePreferredSize() const;
 
 	virtual void Layout() {}
 
@@ -50,6 +50,8 @@ public:
 	Rect2D& BoundingBox() { return m_BoundingBox; }
 	const Rect2D& BoundingBox() const { return m_BoundingBox; }
 
+	Rect2D ContentBoundingBox() const;
+
 	WidgetStyle& Style() { return m_Style; }
 	const WidgetStyle& Style() const { return m_Style; }
 
@@ -62,4 +64,6 @@ private:
 	Rect2D m_BoundingBox;
 
 	WidgetStyle m_Style;
+
+	virtual glm::vec2 ComputeContentPreferredSize() const { return {}; }
 };

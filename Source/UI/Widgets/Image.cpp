@@ -7,7 +7,7 @@ std::unique_ptr<Image> Image::LoadFromFile(std::string_view Path)
 	return std::unique_ptr<Image>(new Image(std::move(Texture)));
 }
 
-glm::vec2 Image::ComputePreferredSize() const
+glm::vec2 Image::ComputeContentPreferredSize() const
 {
 	return { m_Texture->Dimensions() };
 }
@@ -16,21 +16,23 @@ void Image::Render(RenderBuffer& Buffer) const
 {
 	Widget::Render(Buffer);
 
-	float ExpectedAspectRatio = static_cast<float>(m_Texture->Dimensions().x) / static_cast<float>(m_Texture->Dimensions().y);
-	float ActualAspectRatio = BoundingBox().Width() / BoundingBox().Height();
+	auto ContentRect = ContentBoundingBox();
 
-	Rect2D Rect = BoundingBox();
+	float ExpectedAspectRatio = static_cast<float>(m_Texture->Dimensions().x) / static_cast<float>(m_Texture->Dimensions().y);
+	float ActualAspectRatio = ContentRect.Width() / ContentRect.Height();
+
+	Rect2D Rect = ContentRect;
 	if (ActualAspectRatio > ExpectedAspectRatio)
 	{
 		float ActualTextureWidth = Rect.Height() * ExpectedAspectRatio;
-		float Slack = BoundingBox().Width() - ActualTextureWidth;
+		float Slack = ContentRect.Width() - ActualTextureWidth;
 		Rect.Left() += Slack / 2.0f;
 		Rect.Right() -= Slack / 2.0f;
 	}
 	if (ActualAspectRatio < ExpectedAspectRatio)
 	{
 		float ActualTextureHeight = Rect.Width() / ExpectedAspectRatio;
-		float Slack = BoundingBox().Height() - ActualTextureHeight;
+		float Slack = ContentRect.Height() - ActualTextureHeight;
 		Rect.Top() -= Slack / 2.0f;
 		Rect.Bottom() += Slack / 2.0f;
 	}

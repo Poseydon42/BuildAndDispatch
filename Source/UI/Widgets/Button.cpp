@@ -5,7 +5,7 @@ std::unique_ptr<Button> Button::Create(std::unique_ptr<Widget> Label, ButtonCall
 	return std::unique_ptr<Button>(new Button(std::move(Label), std::move(Callback)));
 }
 
-glm::vec2 Button::ComputePreferredSize() const
+glm::vec2 Button::ComputeContentPreferredSize() const
 {
 	if (!m_Label)
 		return Widget::ComputePreferredSize();
@@ -17,7 +17,7 @@ void Button::Layout()
 {
 	if (m_Label)
 	{
-		m_Label->BoundingBox() = BoundingBox();
+		m_Label->BoundingBox() = ContentBoundingBox();
 		m_Label->Layout();
 	}
 }

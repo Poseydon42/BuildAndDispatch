@@ -14,8 +14,6 @@ class Label : public Widget
 public:
 	static std::unique_ptr<Label> Create(std::string Text, uint32_t FontSize, std::shared_ptr<Font> Font, TextAlignment HorizontalAlignment = TextAlignment::Center, TextAlignment VerticalAlignment = TextAlignment::Center);
 
-	virtual glm::vec2 ComputePreferredSize() const override;
-
 	virtual void Render(RenderBuffer& Buffer) const override;
 
 	const std::string& Text() const { return m_Text; }
@@ -37,4 +35,6 @@ private:
 	std::shared_ptr<Font> m_Font;
 
 	Label(std::string Text, uint32_t FontSize, std::shared_ptr<Font> Font, TextAlignment HorizontalAlignment, TextAlignment VerticalAlignment);
+
+	virtual glm::vec2 ComputeContentPreferredSize() const override;
 };

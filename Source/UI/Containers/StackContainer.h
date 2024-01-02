@@ -23,8 +23,6 @@ public:
 
 	static std::unique_ptr<StackContainer> Create(Direction Direction);
 
-	virtual glm::vec2 ComputePreferredSize() const override;
-
 	virtual void Layout() override;;
 
 	float& Spacing() { return m_Spacing; }
@@ -38,4 +36,6 @@ private:
 
 	Direction m_Direction;
 	float m_Spacing = 0.0f;
+
+	virtual glm::vec2 ComputeContentPreferredSize() const override;
 };

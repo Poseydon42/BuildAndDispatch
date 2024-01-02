@@ -9,8 +9,6 @@ class Panel : public Widget
 public:
 	static std::unique_ptr<Panel> Create(std::optional<std::unique_ptr<Widget>> Content = std::nullopt);
 
-	virtual glm::vec2 ComputePreferredSize() const override;
-
 	virtual void Layout() override;
 
 	virtual void Render(RenderBuffer& Buffer) const override;
@@ -22,4 +20,6 @@ private:
 	explicit Panel(std::optional<std::unique_ptr<Widget>> Content);
 
 	std::unique_ptr<Widget> m_Content;
+
+	virtual glm::vec2 ComputeContentPreferredSize() const override;
 };

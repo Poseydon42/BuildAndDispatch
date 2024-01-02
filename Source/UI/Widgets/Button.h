@@ -9,8 +9,6 @@ public:
 
 	static std::unique_ptr<Button> Create(std::unique_ptr<Widget> Label, ButtonCallbackType Callback = {});
 
-	virtual glm::vec2 ComputePreferredSize() const override;
-
 	virtual void Layout() override;
 
 	virtual void Render(RenderBuffer& Buffer) const override;
@@ -26,4 +24,6 @@ private:
 
 	std::unique_ptr<Widget> m_Label;
 	ButtonCallbackType m_Callback;
+
+	virtual glm::vec2 ComputeContentPreferredSize() const override;
 };

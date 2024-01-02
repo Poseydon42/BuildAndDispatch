@@ -5,7 +5,7 @@ std::unique_ptr<CanvasContainer> CanvasContainer::Create()
 	return std::unique_ptr<CanvasContainer>(new CanvasContainer);
 }
 
-glm::vec2 CanvasContainer::ComputePreferredSize() const
+glm::vec2 CanvasContainer::ComputeContentPreferredSize() const
 {
 	glm::vec2 Result = {};
 	ForEachChild([&Result](const Widget& Widget)
@@ -21,30 +21,30 @@ void CanvasContainer::Layout()
 	{
 		auto ChildSize = Child.ComputePreferredSize();
 
-		auto LeftMargin = Child.Style().LeftMargin.GetAbsoluteValue(BoundingBox().Width());
-		auto RightMargin = Child.Style().RightMargin.GetAbsoluteValue(BoundingBox().Width());
-		auto TopMargin = Child.Style().TopMargin.GetAbsoluteValue(BoundingBox().Height());
-		auto BottomMargin = Child.Style().BottomMargin.GetAbsoluteValue(BoundingBox().Height());
+		auto LeftMargin = Child.Style().LeftMargin.GetAbsoluteValue(ContentBoundingBox().Width());
+		auto RightMargin = Child.Style().RightMargin.GetAbsoluteValue(ContentBoundingBox().Width());
+		auto TopMargin = Child.Style().TopMargin.GetAbsoluteValue(ContentBoundingBox().Height());
+		auto BottomMargin = Child.Style().BottomMargin.GetAbsoluteValue(ContentBoundingBox().Height());
 
-		if (LeftMargin + ChildSize.x + RightMargin > BoundingBox().Width())
+		if (LeftMargin + ChildSize.x + RightMargin > ContentBoundingBox().Width())
 		{
-			auto Scale = (BoundingBox().Width() - ChildSize.x) / (LeftMargin + RightMargin + 0.00001f);
+			auto Scale = (ContentBoundingBox().Width() - ChildSize.x) / (LeftMargin + RightMargin + 0.00001f);
 			LeftMargin *= Scale;
 			RightMargin *= Scale;
 		}
 
-		if (TopMargin + ChildSize.y + BottomMargin > BoundingBox().Height())
+		if (TopMargin + ChildSize.y + BottomMargin > ContentBoundingBox().Height())
 		{
-			auto Scale = (BoundingBox().Height() - ChildSize.y) / (TopMargin + BottomMargin + 0.00001f);
+			auto Scale = (ContentBoundingBox().Height() - ChildSize.y) / (TopMargin + BottomMargin + 0.00001f);
 			TopMargin *= Scale;
 			BottomMargin *= Scale;
 		}
 
-		Child.BoundingBox().Left() = BoundingBox().Left() + LeftMargin;
-		Child.BoundingBox().Right() = BoundingBox().Right() - RightMargin;
+		Child.BoundingBox().Left() = ContentBoundingBox().Left() + LeftMargin;
+		Child.BoundingBox().Right() = ContentBoundingBox().Right() - RightMargin;
 
-		Child.BoundingBox().Top() = BoundingBox().Top() - TopMargin;
-		Child.BoundingBox().Bottom() = BoundingBox().Bottom() + BottomMargin;
+		Child.BoundingBox().Top() = ContentBoundingBox().Top() - TopMargin;
+		Child.BoundingBox().Bottom() = ContentBoundingBox().Bottom() + BottomMargin;
 
 		Child.Layout();
 	});

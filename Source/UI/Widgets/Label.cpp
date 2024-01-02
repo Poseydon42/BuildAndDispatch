@@ -7,7 +7,7 @@ std::unique_ptr<Label> Label::Create(std::string Text, uint32_t FontSize, std::s
 	return std::unique_ptr<Label>(new Label(std::move(Text), FontSize, std::move(Font), HorizontalAlignment, VerticalAlignment));
 }
 
-glm::vec2 Label::ComputePreferredSize() const
+glm::vec2 Label::ComputeContentPreferredSize() const
 {
 	auto Result = TextLayout::Measure(m_Text, m_FontSize, *m_Font);
 	return Result;
@@ -19,20 +19,22 @@ void Label::Render(RenderBuffer& Buffer) const
 
 	auto TextSize = TextLayout::Measure(m_Text, m_FontSize, *m_Font);
 
+	auto ContentRect = ContentBoundingBox();
+
 	Rect2D TextRect;
 	switch (m_HorizontalTextAlignment)
 	{
 	case TextAlignment::Begin:
-		TextRect.Left() = BoundingBox().Left();
+		TextRect.Left() = ContentRect.Left();
 		TextRect.Right() = TextRect.Left() + TextSize.x;
 		break;
 	case TextAlignment::Center:
-		TextRect.Left() = BoundingBox().Left() + (BoundingBox().Width() - TextSize.x) / 2.0f;
-		TextRect.Right() = BoundingBox().Right() - (BoundingBox().Width() - TextSize.x) / 2.0f;
+		TextRect.Left() = ContentRect.Left() + (ContentRect.Width() - TextSize.x) / 2.0f;
+		TextRect.Right() = ContentRect.Right() - (ContentRect.Width() - TextSize.x) / 2.0f;
 		break;
 	case TextAlignment::End:
-		TextRect.Left() = BoundingBox().Left() + (BoundingBox().Width() - TextSize.x);
-		TextRect.Right() = BoundingBox().Right();
+		TextRect.Left() = ContentRect.Left() + (ContentRect.Width() - TextSize.x);
+		TextRect.Right() = ContentRect.Right();
 		break;
 	default:
 		BD_UNREACHABLE();
@@ -41,16 +43,16 @@ void Label::Render(RenderBuffer& Buffer) const
 	switch (m_VerticalTextAlignment)
 	{
 	case TextAlignment::Begin:
-		TextRect.Top() = BoundingBox().Top();
-		TextRect.Bottom() = BoundingBox().Top() - TextSize.y;
+		TextRect.Top() = ContentRect.Top();
+		TextRect.Bottom() = ContentRect.Top() - TextSize.y;
 		break;
 	case TextAlignment::Center:
-		TextRect.Top() = BoundingBox().Top() - (BoundingBox().Height() - TextSize.y) / 2.0f;
-		TextRect.Bottom() = BoundingBox().Bottom() + (BoundingBox().Height() - TextSize.y) / 2.0f;
+		TextRect.Top() = ContentRect.Top() - (ContentRect.Height() - TextSize.y) / 2.0f;
+		TextRect.Bottom() = ContentRect.Bottom() + (ContentRect.Height() - TextSize.y) / 2.0f;
 		break;
 	case TextAlignment::End:
-		TextRect.Top() = BoundingBox().Bottom() + TextSize.y;
-		TextRect.Bottom() = BoundingBox().Bottom();
+		TextRect.Top() = ContentRect.Bottom() + TextSize.y;
+		TextRect.Bottom() = ContentRect.Bottom();
 		break;
 	default:
 		BD_UNREACHABLE();

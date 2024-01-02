@@ -23,7 +23,7 @@ std::unique_ptr<StackContainer> StackContainer::Create(Direction Direction)
 	return std::unique_ptr<StackContainer>(new StackContainer(Direction));
 }
 
-glm::vec2 StackContainer::ComputePreferredSize() const
+glm::vec2 StackContainer::ComputeContentPreferredSize() const
 {
 	auto MajorCoordinateIndex = MajorCoordinateIndexFromDirection(m_Direction);
 	auto MinorCoordinateIndex = MinorCoordinateIndexFromDirection(m_Direction);
@@ -66,14 +66,14 @@ void StackContainer::Layout()
 	});
 	TotalPreferredLength += Spacing() * (ChildCount() - 1);
 
-	float AvailableStretch = BoundingBox().Dimensions()[MajorCoordinateIndex] - TotalPreferredLength;
+	float AvailableStretch = ContentBoundingBox().Dimensions()[MajorCoordinateIndex] - TotalPreferredLength;
 	if (AvailableStretch < 0.0f)
 		AvailableStretch = 0.0f;
 
 	// Second pass - position each child
 
 	bool First = true;
-	float NextCoordinate = m_Direction == Direction::Horizontal ? BoundingBox().Left() : BoundingBox().Top();
+	float NextCoordinate = m_Direction == Direction::Horizontal ? ContentBoundingBox().Left() : ContentBoundingBox().Top();
 	ForEachChild([&](Widget& Child)
 	{
 		if (First)
@@ -81,7 +81,7 @@ void StackContainer::Layout()
 		else
 			NextCoordinate += m_Direction == Direction::Horizontal ? Spacing() : -Spacing();
 
-		auto BoundingBoxPerpendicularLength = m_Direction == Direction::Horizontal ? BoundingBox().Height() : BoundingBox().Width();
+		auto BoundingBoxPerpendicularLength = m_Direction == Direction::Horizontal ? ContentBoundingBox().Height() : ContentBoundingBox().Width();
 		auto AbsoluteLeftOrTopMargin = (m_Direction == Direction::Horizontal ? Child.Style().TopMargin : Child.Style().LeftMargin).GetAbsoluteValue(BoundingBoxPerpendicularLength);
 		auto AbsoluteRightOrBottomMargin = (m_Direction == Direction::Horizontal ? Child.Style().BottomMargin : Child.Style().RightMargin).GetAbsoluteValue(BoundingBoxPerpendicularLength);
 
@@ -102,15 +102,15 @@ void StackContainer::Layout()
 			Child.BoundingBox().Left() = NextCoordinate;
 			Child.BoundingBox().Right() = NextCoordinate + TotalLength;
 
-			Child.BoundingBox().Top() = BoundingBox().Top() - AbsoluteLeftOrTopMargin;
-			Child.BoundingBox().Bottom() = BoundingBox().Bottom() + AbsoluteRightOrBottomMargin;
+			Child.BoundingBox().Top() = ContentBoundingBox().Top() - AbsoluteLeftOrTopMargin;
+			Child.BoundingBox().Bottom() = ContentBoundingBox().Bottom() + AbsoluteRightOrBottomMargin;
 
 			NextCoordinate += TotalLength;
 
 			break;
 		case Direction::Vertical:
-			Child.BoundingBox().Left() = BoundingBox().Left() + AbsoluteLeftOrTopMargin;
-			Child.BoundingBox().Right() = BoundingBox().Right() - AbsoluteRightOrBottomMargin;
+			Child.BoundingBox().Left() = ContentBoundingBox().Left() + AbsoluteLeftOrTopMargin;
+			Child.BoundingBox().Right() = ContentBoundingBox().Right() - AbsoluteRightOrBottomMargin;
 
 			Child.BoundingBox().Top() = NextCoordinate;
 			Child.BoundingBox().Bottom() = NextCoordinate - TotalLength;

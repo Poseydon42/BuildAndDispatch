@@ -17,6 +17,11 @@ struct WidgetStyle
 	float BorderThickness = 0.0f;
 	float CornerRadius = 0.0f;
 
+	float PaddingLeft = 0.0f;
+	float PaddingRight = 0.0f;
+	float PaddingTop = 0.0f;
+	float PaddingBottom = 0.0f;
+
 	glm::vec4 BackgroundColor = glm::vec4(0.0f);
 	glm::vec4 BorderColor = glm::vec4(1.0);
 };

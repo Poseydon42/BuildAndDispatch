@@ -9,6 +9,8 @@ glm::vec2 Widget::ComputePreferredSize() const
 {
 	auto ContentSize = ComputeContentPreferredSize();
 	ContentSize += 2 * Style().BorderThickness;
+	ContentSize.x += Style().PaddingLeft + Style().PaddingRight;
+	ContentSize.y += Style().PaddingTop + Style().PaddingBottom;
 	return ContentSize;
 }
 
@@ -33,9 +35,9 @@ void Widget::Render(RenderBuffer& Buffer) const
 Rect2D Widget::ContentBoundingBox() const
 {
 	auto Result = BoundingBox();
-	Result.Left()   += Style().BorderThickness;
-	Result.Right()  -= Style().BorderThickness;
-	Result.Top()    -= Style().BorderThickness;
-	Result.Bottom() += Style().BorderThickness;
+	Result.Left()   += Style().BorderThickness + Style().PaddingLeft;
+	Result.Right()  -= Style().BorderThickness + Style().PaddingRight;
+	Result.Top()    -= Style().BorderThickness + Style().PaddingTop;
+	Result.Bottom() += Style().BorderThickness + Style().PaddingBottom;
 	return Result;
 }

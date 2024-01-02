@@ -67,7 +67,8 @@ void GameUILayer::Update(float DeltaTime, const InputState& InputState, World& W
 
 	m_CurrentWorld = &World;
 
-	m_GameTimeLabel->Text() = std::format("{:02}:{:02}:{:02}", 23, 12, 02);
+	auto CurrentTime = World.CurrentTime();
+	m_GameTimeLabel->Text() = std::format("{:02}:{:02}:{:02}", CurrentTime.Hours(), CurrentTime.Minutes(), CurrentTime.Seconds());
 
 	m_RootWidget->BoundingBox() = UsableArea;
 	m_RootWidget->Layout();
@@ -86,6 +87,7 @@ void GameUILayer::Render(Renderer& Renderer, const World& World) const
 GameUILayer::GameUILayer()
 {
 	auto RootContainer = StackContainer::Create(StackContainer::Direction::Vertical);
+	RootContainer->Style().LeftMargin = RootContainer->Style().RightMargin = RootContainer->Style().TopMargin = RootContainer->Style().BottomMargin = Size1D::Absolute(8.0f);
 	
 	auto GameSpeedPanel = CreateGameSpeedPanel();
 	RootContainer->AddChild(std::move(GameSpeedPanel));
@@ -109,7 +111,7 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 		if (IsPress)
 		{
 			BD_ASSERT(m_CurrentWorld);
-			m_CurrentWorld->SimulationSpeed() = 0.0f;
+			m_CurrentWorld->SetSimulationSpeed(0.0f);
 		}
 	});
 	
@@ -118,7 +120,7 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 		if (IsPress)
 		{
 			BD_ASSERT(m_CurrentWorld);
-			m_CurrentWorld->SimulationSpeed() = 1.0f;
+			m_CurrentWorld->SetSimulationSpeed(1.0f);
 		}
 	});
 
@@ -127,7 +129,7 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 		if (IsPress)
 		{
 			BD_ASSERT(m_CurrentWorld);
-			m_CurrentWorld->SimulationSpeed() = 3.0f;
+			m_CurrentWorld->SetSimulationSpeed(3.0f);
 		}
 	});
 
@@ -136,7 +138,7 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 		if (IsPress)
 		{
 			BD_ASSERT(m_CurrentWorld);
-			m_CurrentWorld->SimulationSpeed() = 10.0f;
+			m_CurrentWorld->SetSimulationSpeed(10.0f);
 		}
 	});
 
@@ -144,6 +146,7 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 	TimeLabel->Style().BorderColor = PauseButton->Style().BorderColor = PlayButton->Style().BorderColor = Speed1Button->Style().BorderColor = Speed2Button->Style().BorderColor = glm::vec4(0.37f, 0.37f, 0.33f, 1.0f);
 	TimeLabel->Style().BorderThickness = PauseButton->Style().BorderThickness = PlayButton->Style().BorderThickness = Speed1Button->Style().BorderThickness = Speed2Button->Style().BorderThickness = 4.0f;
 	TimeLabel->Style().CornerRadius = PauseButton->Style().CornerRadius = PlayButton->Style().CornerRadius = Speed1Button->Style().CornerRadius = Speed2Button->Style().CornerRadius = 6.0f;
+	TimeLabel->Style().PaddingLeft = TimeLabel->Style().PaddingRight = 6.0f;
 
 	Container->AddChild(std::move(TimeLabel));
 	Container->AddChild(std::move(PauseButton));

@@ -109,6 +109,12 @@ void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction, float Len
 
 void World::Update(float DeltaTime)
 {
+	auto AdjustedDeltaTime = SimulationSpeed() * DeltaTime;
+	if (AdjustedDeltaTime <= 0.0f)
+		return;
+
+	m_CurrentTime += AdjustedDeltaTime;
+
 	// Reset the state of all occupied tracks to free (it is easier to recompute which tiles
 	// are occupied from scratch than use the state from the previous frame).
 	std::ranges::for_each(m_TrackTiles, [](TrackTile& Tile)
@@ -120,7 +126,7 @@ void World::Update(float DeltaTime)
 		});
 	});
 
-	std::ranges::for_each(m_Trains, [&](auto& Train) { UpdateTrain(Train, DeltaTime); });
+	std::ranges::for_each(m_Trains, [&](auto& Train) { UpdateTrain(Train, AdjustedDeltaTime); });
 }
 
 bool World::IsPoint(int32_t TileX, int32_t TileY) const
@@ -286,16 +292,6 @@ std::span<const Train> World::Trains() const
 	return m_Trains;
 }
 
-float& World::SimulationSpeed()
-{
-	return m_SimulationSpeed;
-}
-
-const float& World::SimulationSpeed() const
-{
-	return m_SimulationSpeed;
-}
-
 template<typename TileBorderCallbackType, typename TileCallbackType>
 float World::MoveAlongTrack(const TrackTile*& Tile, TrackDirection& Direction, float& OffsetInTile, float MaxDistance, TileBorderCallbackType&& TileBorderCallback, TileCallbackType&& TileCallback) const
 {
@@ -393,7 +389,7 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 {
 	// In m/s
 	constexpr float TrainSpeed = 0.20f;
-	float DistanceToTravel = TrainSpeed * SimulationSpeed() * DeltaTime;
+	float DistanceToTravel = TrainSpeed * DeltaTime;
 
 	// Move the train along the track
 	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);

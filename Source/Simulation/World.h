@@ -8,6 +8,7 @@
 #include "Simulation/Signal.h"
 #include "Simulation/Track.h"
 #include "Simulation/Train.h"
+#include "Simulation/WorldTime.h"
 
 class World
 {
@@ -38,8 +39,10 @@ public:
 	std::span<const Signal> Signals() const;
 	std::span<const Train> Trains() const;
 
-	float& SimulationSpeed();
-	const float& SimulationSpeed() const;
+	float SimulationSpeed() { return m_SimulationSpeed; }
+	void SetSimulationSpeed(float NewSpeed) { m_SimulationSpeed = NewSpeed; }
+
+	WorldTime CurrentTime() const { return m_CurrentTime; }
 
 private:
 	std::vector<TrackTile> m_TrackTiles;
@@ -49,6 +52,7 @@ private:
 	std::vector<Train> m_Trains;
 
 	float m_SimulationSpeed = 1.0f;
+	WorldTime m_CurrentTime;
 
 	// NOTE: TileBorderCallbackType = bool()(const TrackTile& From, const TrackTile& To);
 	//       The callback should return true if the train can proceed to the next tile.

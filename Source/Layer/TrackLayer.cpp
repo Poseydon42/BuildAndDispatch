@@ -63,25 +63,25 @@ std::unique_ptr<TrackLayer> TrackLayer::Create()
 
 bool TrackLayer::OnMousePress(MouseButton::Button Button, const InputState& InputState, World& World)
 {
-	if (Button == MouseButton::Left)
+	auto WorldPos = CursorPositionToWorldCoordinates(InputState.MousePosition, InputState.MousePositionBoundaries);
+	auto TilePos = WorldPositionToTileCoordinates(WorldPos);
+
+	for (const auto& Signal : World.Signals())
 	{
-		auto WorldPos = CursorPositionToWorldCoordinates(InputState.MousePosition, InputState.MousePositionBoundaries);
-		auto TilePos = WorldPositionToTileCoordinates(WorldPos);
-
-		for (const auto& Signal : World.Signals())
+		if (m_SignalIcons.begin()->second->IsPointInside(WorldPos, TransformationMatrixForSignal(Signal)))
 		{
-			if (m_SignalIcons.begin()->second->IsPointInside(WorldPos, TransformationMatrixForSignal(Signal)))
-			{
+			if (Button == MouseButton::Left)
 				HandleSignalClick(World, Signal);
-				return true;
-			}
-		}
-
-		if (World.IsPoint(TilePos.x, TilePos.y) && glm::distance(glm::vec2(TilePos), WorldPos) < PointActivationRadius)
-		{
-			World.SwitchPoint(TilePos.x, TilePos.y);
+			else if (Button == MouseButton::Right)
+				m_RouteStartSignalLocation = std::nullopt;
 			return true;
 		}
+	}
+
+	if (Button == MouseButton::Left && World.IsPoint(TilePos.x, TilePos.y) && glm::distance(glm::vec2(TilePos), WorldPos) < PointActivationRadius)
+	{
+		World.SwitchPoint(TilePos.x, TilePos.y);
+		return true;
 	}
 
 	return false;

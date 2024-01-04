@@ -16,10 +16,33 @@ VERTEX_DESCRIPTION_END()
 RenderBuffer::RenderBuffer(Renderer& Renderer)
 	: m_Renderer(Renderer)
 {
+	m_SolidColorShader = Shader::Create("Resources/Shaders/SolidColor.vert", "Resources/Shaders/SolidColor.frag");
 	m_RectShader = Shader::Create("Resources/Shaders/UIRect.vert", "Resources/Shaders/UIRect.frag");
 	m_TextureRectShader = Shader::Create("Resources/Shaders/UITextureRect.vert", "Resources/Shaders/UITextureRect.frag");
 	m_TextShader = Shader::Create("Resources/Shaders/TextMSDF.vert", "Resources/Shaders/TextMSDF.frag");
 	BD_ASSERT(m_TextShader);
+}
+
+void RenderBuffer::Line(glm::vec2 From, glm::vec2 To, float Thickness, glm::vec4 Color)
+{
+	auto Direction = glm::normalize(To - From);
+	auto Normal = glm::vec2(Direction.y, -Direction.x);
+	auto HalfThickness = Thickness / 2.0f;
+
+	std::vector<UIVertex> Vertices = {
+		{ (From - Normal * HalfThickness) / m_Renderer.FramebufferSize(), {} },
+		{ (From + Normal * HalfThickness) / m_Renderer.FramebufferSize(), {} },
+		{ (To - Normal * HalfThickness) / m_Renderer.FramebufferSize(), {} },
+
+		{ (From + Normal * HalfThickness) / m_Renderer.FramebufferSize(), {} },
+		{ (To - Normal * HalfThickness) / m_Renderer.FramebufferSize(), {} },
+		{ (To + Normal * HalfThickness) / m_Renderer.FramebufferSize(), {} },
+	};
+	auto Geometry = GeometryBuffer<UIVertex>::Create(Vertices.size(), false, Vertices);
+
+	m_SolidColorShader->SetUniform("u_Color", Color);
+
+	m_Renderer.DrawWithShader(*Geometry, *m_SolidColorShader);
 }
 
 std::unique_ptr<GeometryBuffer<UIVertex>> CreateQuad(Rect2D Rect, glm::vec2 FramebufferSize)

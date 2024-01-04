@@ -118,6 +118,19 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 
 	// FIXME: this should only be done in debug mode
 	std::ranges::for_each(World.Trains(), [&](const auto& Train) { RenderTrain(Renderer, Train); });
+
+#define DRAW_GRID
+#ifdef DRAW_GRID
+	auto FramebufferSize = glm::ivec2(Renderer.FramebufferSize());
+	auto TopLeftTile = WorldPositionToTileCoordinates(CursorPositionToWorldCoordinates(glm::ivec2(0, 0), FramebufferSize));
+	auto BottomRightTile = WorldPositionToTileCoordinates(CursorPositionToWorldCoordinates(FramebufferSize, FramebufferSize));
+
+	constexpr auto GridLineColor = glm::vec4(1.0f);
+	for (auto X = TopLeftTile.x; X <= BottomRightTile.x; X++)
+		Renderer.Debug_PushLine(glm::vec2(X + 0.5f, TopLeftTile.y + 0.5f), glm::vec2(X + 0.5f, BottomRightTile.y - 0.5f), GridLineColor);
+	for (auto Y = BottomRightTile.y; Y <= TopLeftTile.y; Y++)
+		Renderer.Debug_PushLine(glm::vec2(TopLeftTile.x - 0.5f, Y + 0.5f), glm::vec2(BottomRightTile.x + 0.5f, Y + 0.5f), GridLineColor);
+#endif
 }
 
 TrackLayer::TrackLayer()

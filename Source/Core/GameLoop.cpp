@@ -6,6 +6,7 @@
 #include "Layer/GameUILayer.h"
 #include "Layer/TrackLayer.h"
 #include "Platform/Time.h"
+#include "Simulation/WorldSerialization.h"
 
 static constexpr uint32_t WindowWidth = 1280;
 static constexpr uint32_t WindowHeight = 720;
@@ -62,6 +63,11 @@ static void GenerateDebugWorld(World& World)
 
 	World.SpawnTrain(-6, 0, TrackDirection::E, 0.5f);
 	World.SpawnTrain(8, 0, TrackDirection::W, 6.4f);
+
+	auto SerializedWorld = WorldSerialization::Serialize(World);
+	BD_LOG_INFO("Using the following world:\n{}", SerializedWorld);
+
+	World = WorldSerialization::Deserialize(SerializedWorld);
 }
 
 template<typename FuncType>

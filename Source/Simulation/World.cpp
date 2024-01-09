@@ -550,3 +550,24 @@ bool World::CanMoveToTile(const TrackTile& From, const TrackTile& To) const
 
 	return true;
 }
+
+void World::OverwriteTile(const TrackTile& Tile)
+{
+	if (auto* ExistingTile = FindTile(Tile.Tile.x, Tile.Tile.y))
+		*ExistingTile = Tile;
+	else
+		m_TrackTiles.push_back(Tile);
+}
+
+void World::OverwriteSignal(const Signal& Signal)
+{
+	if (auto* ExistingSignal = FindSignal(Signal.Location))
+		*ExistingSignal = Signal;
+	else
+		m_Signals.push_back(Signal);
+}
+
+void World::AddTrainUnsafe(const Train& Train)
+{
+	m_Trains.push_back(Train);
+}

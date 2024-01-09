@@ -74,4 +74,10 @@ private:
 	Signal* FindSignal(SignalLocation Location);
 
 	bool CanMoveToTile(const TrackTile& From, const TrackTile& To) const;
+
+	void OverwriteTile(const TrackTile& Tile);
+	void OverwriteSignal(const Signal& Signal);
+	void AddTrainUnsafe(const Train& Train);
+
+	friend class WorldSerialization;
 };

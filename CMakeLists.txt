@@ -43,6 +43,8 @@ set(SOURCES
     Source/Simulation/Train.h
     Source/Simulation/World.cpp
     Source/Simulation/World.h
+    Source/Simulation/WorldSerialization.cpp
+    Source/Simulation/WorldSerialization.h
     Source/Simulation/WorldTime.h
     Source/UI/Container.h
     Source/UI/Containers/CanvasContainer.cpp

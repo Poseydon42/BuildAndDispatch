@@ -5,6 +5,15 @@
 
 using namespace nlohmann;
 
+json SerializeMeta(const World& World)
+{
+	json Result;
+
+	Result["time"] = World.CurrentTime().SecondsSinceStart();
+
+	return Result;
+}
+
 json SerializeTile(const TrackTile& Tile)
 {
 	json Result;
@@ -12,6 +21,12 @@ json SerializeTile(const TrackTile& Tile)
 	Result["coordinates"] = std::array{ Tile.Tile.x, Tile.Tile.y };
 	Result["directions"] = Tile.ConnectedDirections;
 	Result["selected_path"] = Tile.SelectedPath;
+
+	Result["states"] = json::array();
+	ForEachExistingDirection(Tile.ConnectedDirections, [&](TrackDirection Direction)
+	{
+		Result["states"].push_back(Tile.State(Direction));
+	});
 
 	return Result;
 }
@@ -83,6 +98,7 @@ std::string WorldSerialization::Serialize(const World& World)
 {
 	json Root;
 
+	Root["meta"] = SerializeMeta(World);
 	Root["tiles"] = SerializeTiles(World);
 	Root["signals"] = SerializeSignals(World);
 	Root["trains"] = SerializeTrains(World);
@@ -95,7 +111,8 @@ std::optional<TrackTile> DeserializeTile(const json& Tile)
 	if (!Tile.contains("coordinates") || !Tile["coordinates"].is_array() || Tile["coordinates"].size() != 2 ||
 		!Tile["coordinates"][0].is_number_integer() || !Tile["coordinates"][1].is_number_integer() ||
 		!Tile.contains("directions") || !Tile["directions"].is_number_unsigned() ||
-		!Tile.contains("selected_path") || !Tile["selected_path"].is_number_unsigned())
+		!Tile.contains("selected_path") || !Tile["selected_path"].is_number_unsigned() ||
+		!Tile.contains("states") || !Tile["states"].is_array())
 	{
 		BD_LOG_WARNING("Invalid tile description");
 		return std::nullopt;
@@ -103,6 +120,12 @@ std::optional<TrackTile> DeserializeTile(const json& Tile)
 
 	TrackTile Result(glm::ivec2(Tile["coordinates"][0], Tile["coordinates"][1]), Tile["directions"]);
 	Result.SelectedPath = Tile["selected_path"];
+
+	size_t NextStateIndex = 0;
+	ForEachExistingDirection(Result.ConnectedDirections, [&](TrackDirection Direction)
+	{
+		Result.SetState(Direction, Tile["states"][NextStateIndex++]);
+	});
 
 	return Result;
 }
@@ -131,11 +154,6 @@ std::optional<Signal> DeserializeSignal(const json& Signal)
 
 std::optional<Train> DeserializeTrain(const json& Train)
 {
-	// Result["direction"] = Train.Direction;
-	// Result["offset"] = Train.OffsetInTile;
-	// Result["tile"] = std::array{ Train.Tile.x, Train.Tile.y };
-	// Result["length"] = Train.Length;
-
 	if (!Train.contains("direction") || !Train["direction"].is_number_unsigned() ||
 		!Train.contains("offset") || !Train["offset"].is_number() ||
 		!Train.contains("tile") || !Train["tile"].is_array() || Train["tile"].size() != 2 ||
@@ -160,6 +178,13 @@ World WorldSerialization::Deserialize(std::string_view Source)
 	World Result;
 
 	json Root = json::parse(Source);
+
+	if (!Root.contains("meta") || !Root["meta"].contains("time"))
+	{
+		BD_LOG_WARNING("Cannot deserialize world with invalid metadata");
+		return Result;
+	}
+	Result.OverrideTime(WorldTime::FromSeconds(Root["meta"]["time"]));
 
 	if (Root.contains("tiles"))
 	{

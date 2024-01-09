@@ -10,7 +10,4 @@ public:
 	static std::string Serialize(const World& World);
 
 	static World Deserialize(std::string_view Source);
-
-private:
-
 };

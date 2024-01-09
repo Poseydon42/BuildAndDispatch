@@ -14,6 +14,8 @@ public:
 	constexpr uint32_t Minutes() const { return static_cast<uint32_t>(m_Seconds) / 60 % 60; }
 	constexpr uint32_t Hours() const { return static_cast<uint32_t>(m_Seconds) / 3600 % 24; }
 
+	constexpr float SecondsSinceStart() const { return m_Seconds; }
+
 	constexpr bool operator==(const WorldTime& Other) const { return Seconds() == Other.Seconds() && Minutes() == Other.Minutes() && Hours() == Other.Hours(); }
 	constexpr bool operator!=(const WorldTime& Other) const { return !(*this == Other); }
 

@@ -78,6 +78,7 @@ private:
 	void OverwriteTile(const TrackTile& Tile);
 	void OverwriteSignal(const Signal& Signal);
 	void AddTrainUnsafe(const Train& Train);
+	void OverrideTime(WorldTime Time);
 
 	friend class WorldSerialization;
 };

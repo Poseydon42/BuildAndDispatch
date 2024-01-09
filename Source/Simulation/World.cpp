@@ -571,3 +571,8 @@ void World::AddTrainUnsafe(const Train& Train)
 {
 	m_Trains.push_back(Train);
 }
+
+void World::OverrideTime(WorldTime Time)
+{
+	m_CurrentTime = Time;
+}

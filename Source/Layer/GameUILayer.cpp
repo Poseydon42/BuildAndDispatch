@@ -102,8 +102,8 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 	auto Container = StackContainer::Create(StackContainer::Direction::Horizontal);
 	Container->Spacing() = 8.0f;
 
-	auto Font = Font::Load("Resources/Fonts/RobotoRegular.json");
-	auto TimeLabel = Label::Create("", 24, Font);
+	auto Font = Font::Load("Resources/Fonts/ConsolaMono.json");
+	auto TimeLabel = Label::Create("", 26, Font);
 	m_GameTimeLabel = TimeLabel.get();
 
 	auto PauseButton = Button::Create(Image::LoadFromFile("Resources/UI/pause.png"), [this](bool IsPress)

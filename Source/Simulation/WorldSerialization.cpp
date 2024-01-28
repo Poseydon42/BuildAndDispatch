@@ -73,6 +73,7 @@ json SerializeTrain(const Train& Train)
 {
 	json Result;
 
+	Result["id"] = Train.ID;
 	Result["direction"] = Train.Direction;
 	Result["offset"] = Train.OffsetInTile;
 	Result["tile"] = std::array{ Train.Tile.x, Train.Tile.y };
@@ -154,7 +155,8 @@ std::optional<Signal> DeserializeSignal(const json& Signal)
 
 std::optional<Train> DeserializeTrain(const json& Train)
 {
-	if (!Train.contains("direction") || !Train["direction"].is_number_unsigned() ||
+	if (!Train.contains("id") || !Train["id"].is_string() ||
+		!Train.contains("direction") || !Train["direction"].is_number_unsigned() ||
 		!Train.contains("offset") || !Train["offset"].is_number() ||
 		!Train.contains("tile") || !Train["tile"].is_array() || Train["tile"].size() != 2 ||
 		!Train["tile"][0].is_number() || !Train["tile"][1].is_number() ||
@@ -164,11 +166,12 @@ std::optional<Train> DeserializeTrain(const json& Train)
 	}
 
 	struct Train Result = {
+		.ID = Train["id"],
 		.Tile = { Train["tile"][0], Train["tile"][1] },
 		.OffsetInTile = Train["offset"],
 		.Direction = Train["direction"],
 		.Length = Train["length"],
-		// FIXME: .Timetable = 
+		.Timetable = Timetable({})
 	};
 	return Result;
 }

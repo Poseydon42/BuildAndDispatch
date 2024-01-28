@@ -259,11 +259,18 @@ struct TrackAreaEntryPoint
 
 struct TrackArea
 {
-	std::string DebugName = "$UNNAMED$";
+	std::string Name;
 
 	/*
 	 * Locations of the ends of the track area. If a train passes through one of these points in the forward (TileFrom -> TileTo) direction,
 	 * it will enter the track area, and if it passes through one of these points in the reverse (TileTo -> TileFrom) direction, it will exit.
 	 */
 	std::vector<TrackAreaEntryPoint> EntryPoints;
+};
+
+struct Exit
+{
+	std::string Name;
+	glm::ivec2 Location;
+	TrackDirection SpawnDirection; // NOTE: trains spawn in this direction and exit in the opposite
 };

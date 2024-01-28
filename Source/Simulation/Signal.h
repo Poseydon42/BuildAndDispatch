@@ -9,6 +9,12 @@ enum class SignalState
 	_Count
 };
 
+enum class SignalKind
+{
+	Manual,
+	Automatic,
+};
+
 struct SignalLocation
 {
 	glm::ivec2 FromTile = {};
@@ -25,6 +31,8 @@ struct Signal
 	SignalLocation Location = {};
 
 	SignalState State = SignalState::Danger;
+
+	SignalKind Kind;
 };
 
 constexpr bool CanTrainPassSignal(SignalState Signal)

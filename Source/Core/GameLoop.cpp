@@ -14,6 +14,8 @@ static constexpr const char* WindowName = "Build & Dispatch";
 
 static void GenerateDebugWorld(World& World)
 {
+	World.AddTrack(-9, 0, -8, 0);
+	World.AddTrack(-8, 0, -7, 0);
 	World.AddTrack(-7, 0, -6, 0);
 	World.AddTrack(-6, 0, -5, 0);
 	World.AddTrack(-5, 0, -4, 0);
@@ -30,6 +32,8 @@ static void GenerateDebugWorld(World& World)
 	World.AddTrack(6, 0, 7, 0);
 	World.AddTrack(7, 0, 8, 0);
 	World.AddTrack(8, 0, 9, 0);
+	World.AddTrack(9, 0, 10, 0);
+	World.AddTrack(10, 0, 11, 0);
 
 	World.AddTrack(-3, 1, -2, 1);
 	World.AddTrack(-2, 1, -1, 1);
@@ -52,22 +56,71 @@ static void GenerateDebugWorld(World& World)
 	World.AddTrack(3, 1, 4, 0);
 	World.AddTrack(4, -1, 5, 0);
 
-	World.AddSignal({ { -5, 0 }, { -4, 0 } });
-	World.AddSignal({ { -1, 0 },{ 0, 0 } });
-	World.AddSignal({ { -3, 1 }, { -4, 0 } });
-	World.AddSignal({ { 3, 0 },{ 4, 0 } });
-	World.AddSignal({ { -2, -1 }, { -3, 0 } });
-	World.AddSignal({ { 2, 1 },{ 3, 1 } });
-	World.AddSignal({ { 4, -1 },{ 5, 0 } });
-	World.AddSignal({ { 7, 0 },{ 6, 0} });
+	World.AddSignal({ { -5, 0 }, { -4, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { -1, 0 },{ 0, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { 0, 0 },{ -1, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { -3, 1 }, { -4, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { 3, 0 },{ 4, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { -2, -1 }, { -3, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { 2, 1 },{ 3, 1 } }, SignalKind::Manual);
+	World.AddSignal({ { 4, -1 },{ 5, 0 } }, SignalKind::Manual);
+	World.AddSignal({ { 7, 0 },{ 6, 0} }, SignalKind::Manual);
 
-	World.SpawnTrain(-6, 0, TrackDirection::E, 0.5f);
-	World.SpawnTrain(8, 0, TrackDirection::W, 6.4f);
+	World.AddSignal({ { -6, 0 }, { -7, 0 } }, SignalKind::Automatic);
+	World.AddSignal({ { 8, 0 }, { 9, 0 } }, SignalKind::Automatic);
 
-	auto SerializedWorld = WorldSerialization::Serialize(World);
+	World.AddTrackArea({
+		.Name = "I",
+		.EntryPoints = {
+			{ .TileFrom = { -3, 0 }, .TileTo = { -2, 0 } },
+			{ .TileFrom = { 4, 0 }, .TileTo = { 3, 0 } },
+		}
+	});
+	World.AddTrackArea({
+		.Name = "2",
+		.EntryPoints = {
+			{ .TileFrom = { -4, 0 }, .TileTo = { -3, 1 } },
+			{ .TileFrom = { 3, 1 }, .TileTo = { 2, 1 } },
+		}
+	});
+
+	World.AddExit(Exit{
+		.Name = "ExitE",
+		.Location = { -9, 0 },
+		.SpawnDirection = TrackDirection::E
+	});
+	World.AddExit(Exit{
+		.Name = "ExitW",
+		.Location = { 11, 0 },
+		.SpawnDirection = TrackDirection::W
+	});
+
+	auto LeftTrainTimetable = Timetable{
+		.SpawnTime = WorldTime::FromSeconds(10.0f),
+		.ArrivalTime = WorldTime::FromSeconds(40.0f),
+		.DepartureTime = WorldTime::FromSeconds(80.0f),
+		.MinStopDuration = 20.0f,
+		.SpawnLocation = "ExitE",
+		.PreferredTrack = "I",
+		.LeaveLocation = "ExitW",
+	};
+	World.SpawnTrain("WE01", 0.5f, std::move(LeftTrainTimetable));
+
+	auto RightTrainTimetable = Timetable {
+		.SpawnTime = WorldTime::FromSeconds(5.0f),
+		.ArrivalTime = WorldTime::FromSeconds(40.0f),
+		.DepartureTime = WorldTime::FromSeconds(80.0f),
+		.MinStopDuration = 20.0f,
+		.SpawnLocation = "ExitW",
+		.PreferredTrack = "2",
+		.LeaveLocation = "ExitE",
+	};
+	World.SpawnTrain("EW01", 6.4f, std::move(RightTrainTimetable));
+
+	/*auto SerializedWorld = WorldSerialization::Serialize(World);
 	BD_LOG_INFO("Using the following world:\n{}", SerializedWorld);
 
-	World = WorldSerialization::Deserialize(SerializedWorld);
+	World = WorldSerialization::Deserialize(SerializedWorld);*/
 }
 
 template<typename FuncType>

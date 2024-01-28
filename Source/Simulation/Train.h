@@ -2,10 +2,16 @@
 
 #include <glm/vec2.hpp>
 
+#include "Simulation/Timetable.h"
 #include "Simulation/Track.h"
 
 struct Train
 {
+	/*
+	 * ID or name of the train
+	 */
+	std::string ID;
+
 	/*
 	 * The tile that the train is currently moving through.
 	 */
@@ -31,4 +37,9 @@ struct Train
 	 * Length of the train in meters.
 	 */
 	const float Length = 1.0f;
+
+	/*
+	 * Train's timetable
+	 */
+	Timetable Timetable;
 };

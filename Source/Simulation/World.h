@@ -15,11 +15,13 @@ class World
 public:
 	void AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 
-	uint32_t AddTrackArea(TrackArea Area);
+	void AddTrackArea(TrackArea Area);
 
-	void AddSignal(SignalLocation Location);
+	void AddExit(Exit Exit);
 
-	void SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction, float Length);
+	void AddSignal(SignalLocation Location, SignalKind Kind);
+
+	void SpawnTrain(std::string ID, float Length, Timetable Timetable);
 
 	void Update(float DeltaTime);
 
@@ -36,6 +38,7 @@ public:
 	bool TryOpenRoute(const Route& Route);
 
 	std::span<const TrackTile> TrackTiles() const;
+	std::span<const Exit> Exits() const;
 	std::span<const Signal> Signals() const;
 	std::span<const Train> Trains() const;
 
@@ -47,6 +50,7 @@ public:
 private:
 	std::vector<TrackTile> m_TrackTiles;
 	std::vector<TrackArea> m_TrackAreas;
+	std::vector<Exit> m_Exits;
 
 	std::vector<Signal> m_Signals;
 	std::vector<Train> m_Trains;
@@ -63,17 +67,25 @@ private:
 
 	void UpdateTrain(Train& Train, float DeltaTime);
 
+	void UpdateMovingTrain(Train& Train, float DeltaTime);
+
 	void FloodFillOccupiedTrack(TrackTile* InitialTile, TrackDirection InitialTileSegment);
 
 	void AddTrackInSingleDirection(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY);
 
 	const TrackTile* FindTile(int32_t TileX, int32_t TileY) const;
 	TrackTile* FindTile(int32_t TileX, int32_t TileY);
+	const TrackTile* FindTile(glm::ivec2 Tile) const;
+	TrackTile* FindTile(glm::ivec2 Tile);
 
 	const Signal* FindSignal(SignalLocation Location) const;
 	Signal* FindSignal(SignalLocation Location);
 
+	const Exit* FindExit(std::string_view Name) const;
+
 	bool CanMoveToTile(const TrackTile& From, const TrackTile& To) const;
+
+	bool IsBlockInFrontFullyClear(const Signal& Signal) const;
 
 	void OverwriteTile(const TrackTile& Tile);
 	void OverwriteSignal(const Signal& Signal);

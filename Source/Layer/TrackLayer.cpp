@@ -212,6 +212,9 @@ void TrackLayer::RenderSignal(Renderer& Renderer, const Signal& Signal) const
 
 void TrackLayer::RenderTrain(Renderer& Renderer, const Train& Train) const
 {
+	if (!Train.Timetable.IsPresentInTheWorld())
+		return;
+
 	constexpr float DebugTrainHalfSize = 0.06f;
 	constexpr glm::vec3 DebugTrainColor = { 0.0f, 0.0f, 1.0f };
 

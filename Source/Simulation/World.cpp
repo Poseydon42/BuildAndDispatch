@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <stack>
+#include <unordered_set>
 #include <glm/ext.hpp>
 
 #include "Core/Assert.h"
@@ -48,13 +49,17 @@ void World::AddTrack(int32_t FromX, int32_t FromY, int32_t ToX, int32_t ToY)
 	AddTrackInSingleDirection(ToX, ToY, FromX, FromY);
 }
 
-uint32_t World::AddTrackArea(TrackArea Area)
+void World::AddTrackArea(TrackArea Area)
 {
 	m_TrackAreas.push_back(std::move(Area));
-	return static_cast<uint32_t>(m_TrackAreas.size()) - 1;
 }
 
-void World::AddSignal(SignalLocation Location)
+void World::AddExit(Exit Exit)
+{
+	m_Exits.push_back(std::move(Exit));
+}
+
+void World::AddSignal(SignalLocation Location, SignalKind Kind)
 {
 	BD_ASSERT(std::abs(Location.FromTile.x - Location.ToTile.x) <= 1
 	       && std::abs(Location.FromTile.y - Location.ToTile.y) <= 1 
@@ -71,40 +76,25 @@ void World::AddSignal(SignalLocation Location)
 	Signal NewSignal =
 	{
 		.Location = Location,
-		.State = SignalState::Danger
+		.State = SignalState::Danger,
+		.Kind = Kind
 	};
 	m_Signals.push_back(NewSignal);
 }
 
-void World::SpawnTrain(int32_t X, int32_t Y, TrackDirection Direction, float Length)
+void World::SpawnTrain(std::string ID, float Length, Timetable Timetable)
 {
-	const auto* Tile = FindTile(X, Y);
-	if (!Tile)
-	{
-		BD_LOG_WARNING("Trying to spawn train at ({},{}), direction {}, which is not a valid track tile", X, Y, TrackDirectionToString(Direction));
-		return;
-	}
-	if (!(Tile->ConnectedDirections & Direction))
-	{
-		BD_LOG_WARNING("Trying to spawn train at ({},{}), direction {} in invalid direction", X, Y, TrackDirectionToString(Direction));
-		return;
-	}
-	
-	auto Paths = ListValidPathsInTile(X, Y);
-	if (!(Paths[Tile->SelectedPath] & Direction))
-	{
-		BD_LOG_WARNING("Trying to spawn train at ({},{}), direction {}, which is not a direction of the currently selected path", X, Y, TrackDirectionToString(Direction));
-		return;
-	}
-
+	BD_ASSERT(Timetable.State == TimetableState::NotSpawned);
 	Train NewTrain =
 	{
-		.Tile = glm::ivec2(X, Y),
+		.ID = std::move(ID),
+		.Tile = glm::ivec2(std::numeric_limits<int>::min()),
 		.OffsetInTile = 0.0f,
-		.Direction = Direction,
-		.Length = Length
+		.Direction = TrackDirection::None,
+		.Length = Length,
+		.Timetable = std::move(Timetable)
 	};
-	m_Trains.push_back(NewTrain);
+	m_Trains.push_back(std::move(NewTrain));
 }
 
 void World::Update(float DeltaTime)
@@ -114,6 +104,18 @@ void World::Update(float DeltaTime)
 		return;
 
 	m_CurrentTime += AdjustedDeltaTime;
+
+	// Update the state of all automatic signals as necessary
+	std::ranges::for_each(m_Signals, [this](Signal& Signal)
+	{
+		if (Signal.Kind != SignalKind::Automatic)
+			return;
+
+		if (IsBlockInFrontFullyClear(Signal))
+			Signal.State = SignalState::Clear;
+		else
+			Signal.State = SignalState::Danger;
+	});
 
 	// Reset the state of all occupied tracks to free (it is easier to recompute which tiles
 	// are occupied from scratch than use the state from the previous frame).
@@ -282,6 +284,11 @@ std::span<const TrackTile> World::TrackTiles() const
 	return m_TrackTiles;
 }
 
+std::span<const Exit> World::Exits() const
+{
+	return m_Exits;
+}
+
 std::span<const Signal> World::Signals() const
 {
 	return m_Signals;
@@ -387,6 +394,48 @@ float World::MoveAlongTrack(const TrackTile*& Tile, TrackDirection& Direction, f
 
 void World::UpdateTrain(Train& Train, float DeltaTime)
 {
+	switch (Train.Timetable.State)
+	{
+	case TimetableState::NotSpawned:
+		if (m_CurrentTime >= Train.Timetable.SpawnTime)
+		{
+			const auto* Exit = FindExit(Train.Timetable.SpawnLocation);
+			BD_ASSERT(Exit);
+			Train.Tile = Exit->Location;
+			Train.Direction = Exit->SpawnDirection;
+			Train.OffsetInTile = 0.00001f; // NOTE: if we set it to 0.0 then the train would get stuck infinitely changing its direction to opposite
+
+			Train.Timetable.AdvanceState();
+		}
+		break;
+	case TimetableState::MovingToDestination:
+		UpdateMovingTrain(Train, DeltaTime);
+		break;
+	case TimetableState::StoppedAtDestination:
+		UpdateMovingTrain(Train, DeltaTime);
+		break;
+	case TimetableState::MovingToExit:
+	{
+		UpdateMovingTrain(Train, DeltaTime);
+		const auto* Exit = FindExit(Train.Timetable.LeaveLocation);
+		BD_ASSERT(Exit);
+		// NOTE: we can compare floats directly since we know that exits are located on dead ends,
+		// so UpdateMovingTrain() will set this value to precisely 0.0
+		if (Train.Tile == Exit->Location && Train.OffsetInTile == 0.0f)
+		{
+			Train.Timetable.AdvanceState();
+		}
+		break;
+	}
+	case TimetableState::Left:
+		break;
+	default:
+		BD_UNREACHABLE();
+	}
+}
+
+void World::UpdateMovingTrain(Train& Train, float DeltaTime)
+{
 	// In m/s
 	constexpr float TrainSpeed = 0.20f;
 	float DistanceToTravel = TrainSpeed * DeltaTime;
@@ -411,8 +460,11 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 			{
 				return EntryPoint.TileFrom == From.Tile && EntryPoint.TileTo == To.Tile;
 			});
-			if (Entered)
-				BD_LOG_INFO("Train entered track area {} at ({},{})", TrackArea.DebugName, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+			if (Entered && Train.Timetable.PreferredTrack == TrackArea.Name)
+			{
+				BD_LOG_INFO("Train {} entered track area {} at ({},{})", Train.ID, TrackArea.Name, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+				Train.Timetable.AdvanceState();
+			}
 
 			bool Left = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaEntryPoint& EntryPoint)
 			{
@@ -420,7 +472,7 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 				return EntryPoint.TileFrom == To.Tile && EntryPoint.TileTo == From.Tile;
 			});
 			if (Left)
-				BD_LOG_INFO("Head of train left track area {} at ({},{})", TrackArea.DebugName, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+				BD_LOG_INFO("Head of train {} left track area {} at ({},{})", Train.ID, TrackArea.Name, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
 		});
 
 		return true;
@@ -525,6 +577,16 @@ TrackTile* World::FindTile(int32_t TileX, int32_t TileY)
 	return (It == m_TrackTiles.end() ? nullptr : &*It);
 }
 
+const TrackTile* World::FindTile(glm::ivec2 Tile) const
+{
+	return FindTile(Tile.x, Tile.y);
+}
+
+TrackTile* World::FindTile(glm::ivec2 Tile)
+{
+	return FindTile(Tile.x, Tile.y);
+}
+
 const Signal* World::FindSignal(SignalLocation Location) const
 {
 	return const_cast<World*>(this)->FindSignal(Location);
@@ -539,6 +601,14 @@ Signal* World::FindSignal(SignalLocation Location)
 	return (It == m_Signals.end() ? nullptr : &*It);
 }
 
+const Exit* World::FindExit(std::string_view Name) const
+{
+	for (const auto& Exit : m_Exits)
+		if (Exit.Name == Name)
+			return &Exit;
+	return nullptr;
+}
+
 bool World::CanMoveToTile(const TrackTile& From, const TrackTile& To) const
 {
 	if (!From.IsConnectedTo(To))
@@ -547,6 +617,47 @@ bool World::CanMoveToTile(const TrackTile& From, const TrackTile& To) const
 	// Signals should not be unconditionally passable, unlike regular tracks
 	if (FindSignal({ .FromTile = From.Tile, .ToTile = To.Tile }) != nullptr)
 		return false;
+
+	return true;
+}
+
+bool World::IsBlockInFrontFullyClear(const Signal& Signal) const
+{
+	std::vector<const TrackTile*> DFSStack;
+	std::unordered_set<const TrackTile*> VisitedTiles;
+
+	auto InitialTile = FindTile(Signal.Location.ToTile);
+	DFSStack.push_back(InitialTile);
+
+	while (!DFSStack.empty())
+	{
+		const auto* CurrentTile = DFSStack.back();
+		DFSStack.pop_back();
+		VisitedTiles.insert(CurrentTile);
+
+		bool ShouldContinue = true;
+		ForEachExistingDirection(CurrentTile->ConnectedDirections, [&](TrackDirection Direction)
+		{
+			if (CurrentTile->State(Direction) != TrackState::Free)
+				ShouldContinue = false;
+		});
+		if (!ShouldContinue)
+			return false;
+
+		ForEachExistingDirection(CurrentTile->ConnectedDirections, [&](TrackDirection Direction)
+		{
+			const auto* NextTile = FindTile(CurrentTile->Tile + TrackDirectionToVector(Direction));
+
+			if (!NextTile || VisitedTiles.contains(NextTile))
+				return;
+			if (FindSignal(SignalLocation{ CurrentTile->Tile, NextTile->Tile }) || FindSignal(SignalLocation{ NextTile->Tile, CurrentTile->Tile }))
+				return;
+
+			DFSStack.push_back(NextTile);
+		});
+		if (!ShouldContinue)
+			return false;
+	}
 
 	return true;
 }

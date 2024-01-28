@@ -51,6 +51,8 @@ set(SOURCES
     Source/UI/Containers/CanvasContainer.h
     Source/UI/Containers/StackContainer.cpp
     Source/UI/Containers/StackContainer.h
+    Source/UI/Containers/TableContainer.cpp
+    Source/UI/Containers/TableContainer.h
     Source/UI/Font.cpp
     Source/UI/Font.h
     Source/UI/RenderBuffer.cpp

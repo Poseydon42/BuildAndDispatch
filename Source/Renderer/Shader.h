@@ -12,6 +12,8 @@
 class Shader
 {
 public:
+	~Shader();
+
 	static std::unique_ptr<Shader> Create(std::string_view VertexShaderPath, std::string_view FragmentShaderPath);
 
 	void Bind() const;

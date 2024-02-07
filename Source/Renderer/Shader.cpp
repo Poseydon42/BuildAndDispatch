@@ -31,6 +31,11 @@ static std::optional<GLuint> LoadAndCompileShader(GLenum Type, std::string_view 
 	return std::nullopt;
 }
 
+Shader::~Shader()
+{
+	glDeleteProgram(m_Program);
+}
+
 std::unique_ptr<Shader> Shader::Create(std::string_view VertexShaderPath, std::string_view FragmentShaderPath)
 {
 	auto MaybeVertexShader = LoadAndCompileShader(GL_VERTEX_SHADER, VertexShaderPath);

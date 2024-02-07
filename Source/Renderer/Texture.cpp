@@ -5,6 +5,11 @@
 
 #include "Core/Logger.h"
 
+Texture::~Texture()
+{
+	glDeleteTextures(1, &m_Texture);
+}
+
 std::unique_ptr<Texture> Texture::Load(std::string_view Path)
 {
 	int Width, Height, Channels;

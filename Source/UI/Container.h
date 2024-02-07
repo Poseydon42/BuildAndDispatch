@@ -23,6 +23,11 @@ public:
 		m_Widgets.erase(m_Widgets.begin() + Index);
 	}
 
+	void ClearChildren()
+	{
+		m_Widgets.clear();
+	}
+
 	size_t ChildCount() const
 	{
 		return m_Widgets.size();

@@ -42,4 +42,10 @@ struct Train
 	 * Train's timetable
 	 */
 	Timetable Timetable;
+
+	/*
+	 * NOTE: the following fields should not be exposed publicly. They are just cached data to make the simulation easier to code.
+	 */
+	const TrackArea* CurrentArea = nullptr;
+	float StoppingTime = 0.0f;
 };

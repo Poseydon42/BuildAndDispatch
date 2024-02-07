@@ -300,7 +300,12 @@ std::span<const Train> World::Trains() const
 }
 
 template<typename TileBorderCallbackType, typename TileCallbackType>
-float World::MoveAlongTrack(const TrackTile*& Tile, TrackDirection& Direction, float& OffsetInTile, float MaxDistance, TileBorderCallbackType&& TileBorderCallback, TileCallbackType&& TileCallback) const
+float World::MoveAlongTrack(
+	const TrackTile*& Tile, TrackDirection& Direction, float& OffsetInTile,
+	float MaxDistance,
+	TileBorderCallbackType&& TileBorderCallback,
+	TileCallbackType&& TileCallback
+) const
 {
 	float DistanceToTravel = MaxDistance;
 	while (Tile && DistanceToTravel > 0.0f)
@@ -412,7 +417,10 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 		UpdateMovingTrain(Train, DeltaTime);
 		break;
 	case TimetableState::StoppedAtDestination:
-		UpdateMovingTrain(Train, DeltaTime);
+		UpdateTrackStateForTrain(Train);
+		Train.StoppingTime += DeltaTime;
+		if (Train.StoppingTime >= Train.Timetable.MinStopDuration && CurrentTime() >= Train.Timetable.DepartureTime)
+			Train.Timetable.AdvanceState();
 		break;
 	case TimetableState::MovingToExit:
 	{
@@ -423,6 +431,7 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 		// so UpdateMovingTrain() will set this value to precisely 0.0
 		if (Train.Tile == Exit->Location && Train.OffsetInTile == 0.0f)
 		{
+			BD_LOG_DEBUG("Train {} had left the simulation", Train.ID);
 			Train.Timetable.AdvanceState();
 		}
 		break;
@@ -443,42 +452,70 @@ void World::UpdateMovingTrain(Train& Train, float DeltaTime)
 	// Move the train along the track
 	const auto* CurrentTile = FindTile(Train.Tile.x, Train.Tile.y);
 	BD_ASSERT(CurrentTile);
-	MoveAlongTrack(CurrentTile, Train.Direction, Train.OffsetInTile, DistanceToTravel, [&](const TrackTile& From, const TrackTile& To)
-	{
-		auto* Signal = FindSignal({ From.Tile, To.Tile });
-		if (Signal && !CanTrainPassSignal(Signal->State))
-			return false;
-
-		// Reset the state of the signal we just passed to danger
-		if (Signal)
-			Signal->State = SignalState::Danger;
-
-		// Check if the train entered or left any track areas
-		std::ranges::for_each(m_TrackAreas, [&](const TrackArea& TrackArea)
+	MoveAlongTrack(CurrentTile, Train.Direction, Train.OffsetInTile, DistanceToTravel,
+		[&](const TrackTile& From, const TrackTile& To)
 		{
-			bool Entered = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaEntryPoint& EntryPoint)
+			if (Train.CurrentArea && Train.Timetable.State == TimetableState::MovingToDestination)
 			{
-				return EntryPoint.TileFrom == From.Tile && EntryPoint.TileTo == To.Tile;
-			});
-			if (Entered && Train.Timetable.PreferredTrack == TrackArea.Name)
-			{
-				BD_LOG_INFO("Train {} entered track area {} at ({},{})", Train.ID, TrackArea.Name, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
-				Train.Timetable.AdvanceState();
+				auto ShouldStop = std::ranges::any_of(Train.CurrentArea->StoppingPoints, 
+					[&](const TrackAreaLocation& StoppingPoint)
+					{
+						if (StoppingPoint.TileFrom == From.Tile && StoppingPoint.TileTo == To.Tile)
+							return true;
+						return false;
+					});
+				if (ShouldStop)
+				{
+					Train.Timetable.AdvanceState();
+					Train.StoppingTime = 0.0f;
+					return false;
+				}
 			}
 
-			bool Left = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaEntryPoint& EntryPoint)
-			{
-				// NOTE: we are comparing the tiles in the opposite order here because we are leaving the track area
-				return EntryPoint.TileFrom == To.Tile && EntryPoint.TileTo == From.Tile;
-			});
-			if (Left)
-				BD_LOG_INFO("Head of train {} left track area {} at ({},{})", Train.ID, TrackArea.Name, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
-		});
+			auto* Signal = FindSignal({ From.Tile, To.Tile });
+			if (Signal && !CanTrainPassSignal(Signal->State))
+				return false;
 
-		return true;
-	}, [](const TrackTile&, TrackDirection){});
+			// Reset the state of the signal we just passed to danger
+			if (Signal)
+				Signal->State = SignalState::Danger;
+
+			// Check if the train entered or left any track areas
+			std::ranges::for_each(m_TrackAreas, [&](const TrackArea& TrackArea)
+			{
+				bool Entered = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaLocation& EntryPoint)
+				{
+					return EntryPoint.TileFrom == From.Tile && EntryPoint.TileTo == To.Tile;
+				});
+				if (Entered && Train.Timetable.PreferredTrack == TrackArea.Name)
+				{
+					BD_LOG_INFO("Train {} entered track area {} at ({},{})", Train.ID, TrackArea.Name, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+					Train.CurrentArea = &TrackArea;
+				}
+
+				bool Left = std::ranges::any_of(TrackArea.EntryPoints, [&](const TrackAreaLocation& EntryPoint)
+				{
+					// NOTE: we are comparing the tiles in the opposite order here because we are leaving the track area
+					return EntryPoint.TileFrom == To.Tile && EntryPoint.TileTo == From.Tile;
+				});
+				if (Left)
+				{
+					BD_LOG_INFO("Head of train {} left track area {} at ({},{})", Train.ID, TrackArea.Name, (From.Tile.x + To.Tile.x) / 2.0f, (From.Tile.y + To.Tile.y) / 2.0f);
+					Train.CurrentArea = nullptr;
+				}
+			});
+
+			return true;
+		},
+		[](const TrackTile&, TrackDirection) {});
+
 	Train.Tile = CurrentTile->Tile;
 
+	UpdateTrackStateForTrain(Train);
+}
+
+void World::UpdateTrackStateForTrain(const Train& Train)
+{
 	// Go back along the train and mark all the tiles it occupies as occupied, and propagate this state to all
 	// the tiles that are connected to the current tile and do not have a track circuit break between them
 	const auto* Tile = FindTile(Train.Tile.x, Train.Tile.y);
@@ -486,14 +523,14 @@ void World::UpdateMovingTrain(Train& Train, float DeltaTime)
 	// FIXME: this works, but I don't really get why we need to take the absolute value here
 	auto OffsetInTile = -Train.OffsetInTile;
 	MoveAlongTrack(Tile, Direction, OffsetInTile, Train.Length, [this](const TrackTile& From, const TrackTile& To)
-	{
-		// NOTE: we don't need to check if the train can pass the signal here because we already did it in the previous step
-		return true;
-	},
-	[this](const TrackTile& OccupiedTile, TrackDirection Segment)
-	{
-		FloodFillOccupiedTrack(FindTile(OccupiedTile.Tile.x, OccupiedTile.Tile.y), Segment);
-	});
+		{
+			// NOTE: we don't need to check if the train can pass the signal here because we already did it in the previous step
+			return true;
+		},
+		[this](const TrackTile& OccupiedTile, TrackDirection Segment)
+		{
+			FloodFillOccupiedTrack(FindTile(OccupiedTile.Tile.x, OccupiedTile.Tile.y), Segment);
+		});
 }
 
 void World::FloodFillOccupiedTrack(TrackTile* InitialTile, TrackDirection InitialTileSegment)

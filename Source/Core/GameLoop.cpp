@@ -74,6 +74,10 @@ static void GenerateDebugWorld(World& World)
 		.EntryPoints = {
 			{ .TileFrom = { -3, 0 }, .TileTo = { -2, 0 } },
 			{ .TileFrom = { 4, 0 }, .TileTo = { 3, 0 } },
+		},
+		.StoppingPoints = {
+			{ .TileFrom = { -2, 0 }, .TileTo = { -3, 0 } },
+			{ .TileFrom = { 3, 0 }, .TileTo = { 4, 0 } },
 		}
 	});
 	World.AddTrackArea({
@@ -81,6 +85,10 @@ static void GenerateDebugWorld(World& World)
 		.EntryPoints = {
 			{ .TileFrom = { -4, 0 }, .TileTo = { -3, 1 } },
 			{ .TileFrom = { 3, 1 }, .TileTo = { 2, 1 } },
+		},
+		.StoppingPoints = {
+			{ .TileFrom = { -2, 1 }, .TileTo = { -3, 1 } },
+			{ .TileFrom = { 2, 1 }, .TileTo = { 3, 1 } },
 		}
 	});
 
@@ -116,11 +124,6 @@ static void GenerateDebugWorld(World& World)
 		.LeaveLocation = "ExitE",
 	};
 	World.SpawnTrain("EW01", 6.4f, std::move(RightTrainTimetable));
-
-	/*auto SerializedWorld = WorldSerialization::Serialize(World);
-	BD_LOG_INFO("Using the following world:\n{}", SerializedWorld);
-
-	World = WorldSerialization::Deserialize(SerializedWorld);*/
 }
 
 template<typename FuncType>

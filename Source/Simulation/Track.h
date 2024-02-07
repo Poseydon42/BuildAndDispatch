@@ -251,7 +251,7 @@ private:
 	}
 };
 
-struct TrackAreaEntryPoint
+struct TrackAreaLocation
 {
 	glm::ivec2 TileFrom;
 	glm::ivec2 TileTo;
@@ -265,7 +265,12 @@ struct TrackArea
 	 * Locations of the ends of the track area. If a train passes through one of these points in the forward (TileFrom -> TileTo) direction,
 	 * it will enter the track area, and if it passes through one of these points in the reverse (TileTo -> TileFrom) direction, it will exit.
 	 */
-	std::vector<TrackAreaEntryPoint> EntryPoints;
+	std::vector<TrackAreaLocation> EntryPoints;
+
+	/*
+	 * Locations where a train should stop if the current track area is its destination and 
+	 */
+	std::vector<TrackAreaLocation> StoppingPoints;
 };
 
 struct Exit

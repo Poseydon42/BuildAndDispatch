@@ -2,6 +2,7 @@
 
 #include "Layer/Layer.h"
 #include "UI/Widget.h"
+#include "UI/Containers/TableContainer.h"
 #include "UI/Widgets/Label.h"
 
 class GameUILayer : public Layer
@@ -24,6 +25,13 @@ private:
 	World* m_CurrentWorld = nullptr;
 
 	Label* m_GameTimeLabel = nullptr;
+	TableContainer* m_TimetablePanel = nullptr;
 
 	std::unique_ptr<Widget> CreateGameSpeedPanel();
+	std::unique_ptr<Widget> CreateTimetablePanel();
+
+	std::shared_ptr<Font> m_TimetableFont;
+	uint32_t m_TimetableFontSize = 22;
+
+	void UpdateTimetablePanel(const World& World);
 };

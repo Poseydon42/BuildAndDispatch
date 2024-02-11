@@ -100,6 +100,8 @@ void GameUILayer::Update(float DeltaTime, const InputState& InputState, World& W
 	auto CurrentTime = World.CurrentTime();
 	m_GameTimeLabel->Text() = std::format("{:02}:{:02}:{:02}", CurrentTime.Hours(), CurrentTime.Minutes(), CurrentTime.Seconds());
 
+	UpdateTimetablePanel(World);
+
 	m_RootWidget->BoundingBox() = UsableArea;
 	m_RootWidget->Layout();
 }
@@ -121,7 +123,16 @@ GameUILayer::GameUILayer()
 	
 	auto GameSpeedPanel = CreateGameSpeedPanel();
 	RootContainer->AddChild(std::move(GameSpeedPanel));
-	RootContainer->Style().LeftMargin = RootContainer->Style().RightMargin = RootContainer->Style().TopMargin = RootContainer->Style().BottomMargin = Size1D::Absolute(8.0f);
+
+	auto Spacer = Widget::Create();
+	Spacer->Style().VerticalStretchRatio = 1.0f;
+	RootContainer->AddChild(std::move(Spacer));
+
+	m_TimetableFont = Font::Load("Resources/Fonts/RobotoRegular.json");
+
+	auto TimetablePanel = CreateTimetablePanel();
+	TimetablePanel->Style().LeftMargin = TimetablePanel->Style().RightMargin = Size1D::Relative(0.15f);
+	RootContainer->AddChild(std::move(TimetablePanel));
 
 	auto RootContainerWrapper = Panel::Create(std::move(RootContainer));
 	m_RootWidget = std::move(RootContainerWrapper);
@@ -185,4 +196,50 @@ std::unique_ptr<Widget> GameUILayer::CreateGameSpeedPanel()
 	Container->AddChild(std::move(Speed2Button));
 
 	return Container;
+}
+
+std::unique_ptr<Widget> GameUILayer::CreateTimetablePanel()
+{
+	std::pair<std::string, float> Columns[] = {
+		std::make_pair(std::string("ID"), 1.0f),
+		std::make_pair(std::string("Track"), 4.0f),
+		std::make_pair(std::string("Arrival"), 1.0f),
+		std::make_pair(std::string("Departure"), 1.0f)
+	};
+	auto Table = TableContainer::Create(Columns, m_TimetableFontSize, m_TimetableFont, 5);
+	Table->Style().LeftMargin = Table->Style().RightMargin = Size1D::Relative(0.5f);
+	Table->Style().BackgroundColor = glm::vec4(0.21f, 0.21f, 0.18f, 1.0f);
+	Table->Style().BorderColor = glm::vec4(0.37f, 0.37f, 0.33f, 1.0f);
+	Table->Style().BorderThickness = 4.0f;
+	Table->Style().CornerRadius = 6.0f;
+	Table->CellPadding() = 4.0f;
+	Table->LineThickness() = 1.5f;
+	Table->LineColor() = glm::vec4(0.96f, 0.96f, 0.96f, 1.0f);
+
+	m_TimetablePanel = Table.get();
+
+	return Table;
+}
+
+void GameUILayer::UpdateTimetablePanel(const World& World)
+{
+	m_TimetablePanel->ClearChildren();
+
+	for (const auto& Train : World.Trains())
+	{
+		// Columns: ID, Track, Arrival, Departure
+		auto ID = Label::Create(Train.ID, m_TimetableFontSize, m_TimetableFont);
+
+		auto ArrivalTime = Train.Timetable.ArrivalTime;
+		auto DepartureTime = Train.Timetable.DepartureTime;
+
+		auto Track = Label::Create(Train.Timetable.PreferredTrack, m_TimetableFontSize, m_TimetableFont);
+		auto Arrival = Label::Create(std::format("{:02}:{:02}:{:02}", ArrivalTime.Hours(), ArrivalTime.Minutes(), ArrivalTime.Seconds()), m_TimetableFontSize, m_TimetableFont);
+		auto Departure = Label::Create(std::format("{:02}:{:02}:{:02}", DepartureTime.Hours(), DepartureTime.Minutes(), DepartureTime.Seconds()), m_TimetableFontSize, m_TimetableFont);
+
+		m_TimetablePanel->AddChild(std::move(ID));
+		m_TimetablePanel->AddChild(std::move(Track));
+		m_TimetablePanel->AddChild(std::move(Arrival));
+		m_TimetablePanel->AddChild(std::move(Departure));
+	}
 }

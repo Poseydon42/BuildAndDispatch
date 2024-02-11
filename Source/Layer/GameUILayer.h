@@ -13,6 +13,8 @@ public:
 
 	virtual bool OnMouseRelease(MouseButton::Button Button, const InputState& InputState, World& World) override;
 
+	virtual bool OnMouseScroll(int32_t Offset, const InputState& InputState, World& World) override;
+
 	virtual void Update(float DeltaTime, const InputState& InputState, World& World, Rect2D UsableArea) override;
 
 	virtual void Render(Renderer& Renderer, const World& World) const override;

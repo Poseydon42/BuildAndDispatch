@@ -42,6 +42,8 @@ public:
 	virtual bool OnMouseDown(MouseButton::Button Button) { return false; }
 	virtual bool OnMouseUp(MouseButton::Button Button) { return false; }
 
+	virtual bool OnScroll(int32_t Delta) { return false; }
+
 	using ForEachChildConstCallbackType = std::function<void(const Widget&)>;
 	using ForEachChildCallbackType = std::function<void(Widget&)>;
 

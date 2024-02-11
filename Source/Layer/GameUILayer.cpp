@@ -43,7 +43,32 @@ static bool HandleMouseEvent(Widget& RootWidget, MouseButton::Button Button, boo
 	auto* Current = Widget;
 	while (Current)
 	{
-		if (Current->OnMouseDown(Button))
+		if (IsPress)
+		{
+			if (Current->OnMouseDown(Button))
+				return true;
+		}
+		else
+		{
+			if (Current->OnMouseUp(Button))
+				return true;
+		}
+		Current = Current->Parent();
+	}
+
+	return false;
+}
+
+static bool HandleScrollEvent(Widget& RootWidget, int32_t Offset, const InputState& InputState)
+{
+	auto* Widget = FindWidgetAt(RootWidget, CursorPositionFromInput(InputState));
+	if (!Widget)
+		return false;
+
+	auto* Current = Widget;
+	while (Current)
+	{
+		if (Current->OnScroll(Offset))
 			return true;
 		Current = Current->Parent();
 	}
@@ -59,6 +84,11 @@ bool GameUILayer::OnMousePress(MouseButton::Button Button, const InputState& Inp
 bool GameUILayer::OnMouseRelease(MouseButton::Button Button, const InputState& InputState, World&)
 {
 	return HandleMouseEvent(*m_RootWidget, Button, true, InputState);
+}
+
+bool GameUILayer::OnMouseScroll(int32_t Offset, const InputState& InputState, World& World)
+{
+	return HandleScrollEvent(*m_RootWidget, Offset, InputState);
 }
 
 void GameUILayer::Update(float DeltaTime, const InputState& InputState, World& World, Rect2D UsableArea)

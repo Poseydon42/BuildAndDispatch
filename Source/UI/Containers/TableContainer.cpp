@@ -2,9 +2,21 @@
 
 #include <numeric>
 
-std::unique_ptr<TableContainer> TableContainer::Create(std::span<std::pair<std::string, float>> Columns, uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont)
+std::unique_ptr<TableContainer> TableContainer::Create(
+	std::span<std::pair<std::string, float>> Columns,
+	uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont,
+	std::optional<size_t> MaxRowsShown)
 {
-	return std::unique_ptr<TableContainer>(new TableContainer(std::move(Columns), ColumnHeadingSize, std::move(ColumnHeadingFont)));
+	return std::unique_ptr<TableContainer>(new TableContainer(std::move(Columns), ColumnHeadingSize, std::move(ColumnHeadingFont), MaxRowsShown));
+}
+
+bool TableContainer::OnScroll(int32_t Delta)
+{
+	auto NumRows = (ChildCount() + m_Columns.size() - 1) / m_Columns.size();
+	auto RowsShown = m_MaxRowsShown.value_or(1);
+	m_IndexOfFirstShownRow = std::max(static_cast<int32_t>(m_IndexOfFirstShownRow) - Delta, 0);
+	m_IndexOfFirstShownRow = std::min(m_IndexOfFirstShownRow, NumRows - RowsShown);
+	return true;
 }
 
 glm::vec2 TableContainer::ComputeContentPreferredSize() const
@@ -13,6 +25,8 @@ glm::vec2 TableContainer::ComputeContentPreferredSize() const
 	BD_ASSERT(ChildCount() % m_Columns.size() == 0);
 
 	auto NumRows = ChildCount() / m_Columns.size();
+	if (m_MaxRowsShown.has_value())
+		NumRows = std::min(NumRows, m_MaxRowsShown.value());
 	m_RowHeights.resize(NumRows);
 
 	float ScalingFactorSum = std::accumulate<std::vector<Column>::const_iterator, float>(m_Columns.begin(), m_Columns.end(), 0.0, [](const float& Value, const Column& Column) { return Value + Column.ScalingFactor; });
@@ -23,20 +37,25 @@ glm::vec2 TableContainer::ComputeContentPreferredSize() const
 	{
 		auto Column = ChildIndex % m_Columns.size();
 		auto Row = ChildIndex / m_Columns.size();
-
-		if (Column == 0)
-		{
-			m_RowHeights[Row] = 0.0f;
-		}
+		ChildIndex++;
 
 		auto ChildSize = Child.ComputePreferredSize();
 		ChildSize += 2.0f * m_CellPadding;
-
 		MinWidth = std::max(MinWidth, ChildSize.x * ScalingFactorSum / m_Columns[Column].ScalingFactor);
-		
-		m_RowHeights[Row] = std::max(m_RowHeights[Row], ChildSize.y);
 
-		ChildIndex++;
+		// NOTE: we need these exit conditions to stay here so that the rows that are currently not shown can still
+		// affect the width of the columns, and, hence, of the table itself. Otherwise it is possible that the width
+		// of the table will change as we scroll up and down.
+		if (Row < m_IndexOfFirstShownRow)
+			return;
+		if (m_MaxRowsShown.has_value() && m_MaxRowsShown.value() <= Row - m_IndexOfFirstShownRow)
+			return;
+
+		if (Column == 0)
+		{
+			m_RowHeights[Row - m_IndexOfFirstShownRow] = 0.0f;
+		}
+		m_RowHeights[Row - m_IndexOfFirstShownRow] = std::max(m_RowHeights[Row - m_IndexOfFirstShownRow], ChildSize.y);
 	});
 	for (const auto& Column : m_Columns)
 	{
@@ -79,28 +98,46 @@ void TableContainer::Layout()
 	{
 		auto Column = ChildIndex % m_Columns.size();
 		auto Row = ChildIndex / m_Columns.size();
+		ChildIndex++;
+
+		if (Row < m_IndexOfFirstShownRow)
+			return;
+		if (m_MaxRowsShown.has_value() && m_MaxRowsShown.value() <= Row - m_IndexOfFirstShownRow)
+			return;
 
 		Child.BoundingBox().Left() = NextChildCoords.x;
 		Child.BoundingBox().Right() = NextChildCoords.x + ColumnWidth(Column);
 		Child.BoundingBox().Top() = NextChildCoords.y;
-		Child.BoundingBox().Bottom() = NextChildCoords.y - m_RowHeights[Row];
+		Child.BoundingBox().Bottom() = NextChildCoords.y - m_RowHeights[Row - m_IndexOfFirstShownRow];
 
 		NextChildCoords.x += ColumnWidth(Column) + m_LineThickness;
 		if (Column == m_Columns.size() - 1)
 		{
 			NextChildCoords.x = ContentBoundingBox().Left() + m_LineThickness;
-			NextChildCoords.y -= m_RowHeights[Row] + m_LineThickness;
+			NextChildCoords.y -= m_RowHeights[Row - m_IndexOfFirstShownRow] + m_LineThickness;
 		}
 
 		Child.Layout();
-
-		ChildIndex++;
 	});
 }
 
 void TableContainer::Render(RenderBuffer& Buffer) const
 {
-	Container::Render(Buffer);
+	Widget::Render(Buffer);
+
+	size_t ChildIndex = 0;
+	ForEachChild([&](const Widget& Child)
+	{
+		auto Row = ChildIndex / m_Columns.size();
+		ChildIndex++;
+
+		if (Row < m_IndexOfFirstShownRow)
+			return;
+		if (m_MaxRowsShown.has_value() && m_MaxRowsShown.value() <= Row - m_IndexOfFirstShownRow)
+			return;
+
+		Child.Render(Buffer);
+	});
 
 	auto Left = ContentBoundingBox().Left();
 	auto Right = ContentBoundingBox().Right();
@@ -127,8 +164,12 @@ void TableContainer::Render(RenderBuffer& Buffer) const
 	Buffer.Line(glm::vec2(NextVerticalLineX, Top), glm::vec2(NextVerticalLineX, Bottom), m_LineThickness, m_LineColor);
 }
 
-TableContainer::TableContainer(std::span<std::pair<std::string, float>> Columns, uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont)
-	: m_ColumnHeadingSize(ColumnHeadingSize)
+TableContainer::TableContainer(
+	std::span<std::pair<std::string, float>> Columns,
+	uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont,
+	std::optional<size_t> MaxRowsShown)
+	: m_MaxRowsShown(MaxRowsShown)
+	, m_ColumnHeadingSize(ColumnHeadingSize)
 	, m_ColumnHeadingFont(std::move(ColumnHeadingFont))
 {
 	for (auto& [ColumnName, ColumnScalingFactor] : Columns)

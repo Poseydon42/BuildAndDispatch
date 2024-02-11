@@ -6,7 +6,9 @@
 class TableContainer : public Container
 {
 public:
-	static std::unique_ptr<TableContainer> Create(std::span<std::pair<std::string, float>> Columns, uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont);
+	static std::unique_ptr<TableContainer> Create(std::span<std::pair<std::string, float>> Columns, uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont, std::optional<size_t> MaxRowsShown);
+
+	virtual bool OnScroll(int32_t Delta) override;
 
 	virtual void Layout() override;
 
@@ -35,10 +37,16 @@ private:
 	float m_LineThickness = 0.0f;
 	glm::vec4 m_LineColor = glm::vec4(0.0f);
 
+	std::optional<size_t> m_MaxRowsShown;
+	size_t m_IndexOfFirstShownRow = 0;
+
 	uint32_t m_ColumnHeadingSize = 0;
 	std::shared_ptr<Font> m_ColumnHeadingFont;
 
-	TableContainer(std::span<std::pair<std::string, float>> Columns, uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont);
+	TableContainer(
+		std::span<std::pair<std::string, float>> Columns,
+		uint32_t ColumnHeadingSize, std::shared_ptr<Font> ColumnHeadingFont,
+		std::optional<size_t> MaxRowsShown);
 
 	virtual glm::vec2 ComputeContentPreferredSize() const override;
 

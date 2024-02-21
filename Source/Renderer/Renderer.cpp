@@ -4,7 +4,7 @@
 
 #include "Core/Logger.h"
 
-VERTEX_DESCRIPTION_BEGIN(DebugLineVertex)
+VERTEX_DESCRIPTION_BEGIN(LineVertex)
 	VERTEX_DESCRIPTION_ELEMENT(Position)
 	VERTEX_DESCRIPTION_ELEMENT(Color)
 VERTEX_DESCRIPTION_END()
@@ -29,15 +29,15 @@ std::unique_ptr<Renderer> Renderer::Create(Window& Window)
 	if (!VectorIconShader)
 		return nullptr;
 
-	auto DebugLineGeometryBuffer = GeometryBuffer<DebugLineVertex>::Create(s_MaxDebugLineCount * 2, true);
-	if (!DebugLineGeometryBuffer)
+	auto LineGeometryBuffer = GeometryBuffer<LineVertex>::Create(s_MaxLineCount * 2, true);
+	if (!LineGeometryBuffer)
 		return nullptr;
 
-	auto DebugLineShader = Shader::Create("Resources/Shaders/DebugLine.vert", "Resources/Shaders/DebugLine.frag");
-	if (!DebugLineShader)
+	auto LineShader = Shader::Create("Resources/Shaders/Line.vert", "Resources/Shaders/Line.frag");
+	if (!LineShader)
 		return nullptr;
 
-	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(VectorIconShader), std::move(DebugLineGeometryBuffer), std::move(DebugLineShader)));
+	return std::unique_ptr<Renderer>(new Renderer(Window, std::move(VectorIconShader), std::move(LineGeometryBuffer), std::move(LineShader)));
 }
 
 void Renderer::BeginFrame()
@@ -48,20 +48,20 @@ void Renderer::BeginFrame()
 	
 	m_ViewProjectionMatrix = glm::mat4(1.0f);
 
-	m_DebugLineGeometryBuffer->Reset();
+	m_LineGeometryBuffer->Reset();
 }
 
 void Renderer::Flush()
 {
-	m_DebugLineGeometryBuffer->Flush();
+	m_LineGeometryBuffer->Flush();
 
-	m_DebugLineShader->Bind();
-	m_DebugLineShader->SetUniform("u_ViewMatrix", m_ViewProjectionMatrix);
+	m_LineShader->Bind();
+	m_LineShader->SetUniform("u_ViewMatrix", m_ViewProjectionMatrix);
 
-	m_DebugLineGeometryBuffer->Bind();
-	glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_DebugLineGeometryBuffer->VertexCount()));
+	m_LineGeometryBuffer->Bind();
+	glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_LineGeometryBuffer->VertexCount()));
 
-	m_DebugLineGeometryBuffer->Reset();
+	m_LineGeometryBuffer->Reset();
 }
 
 void Renderer::EndFrame()
@@ -87,10 +87,10 @@ void Renderer::Draw(const VectorIcon& Icon, const glm::mat4& TransformationMatri
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(Icon.GeometryBuffer().VertexCount()));
 }
 
-void Renderer::Debug_PushLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
+void Renderer::DrawLine(glm::vec2 From, glm::vec2 To, glm::vec3 Color)
 {
-	m_DebugLineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });
-	m_DebugLineGeometryBuffer->AppendVertex({ .Position = To, .Color = Color });
+	m_LineGeometryBuffer->AppendVertex({ .Position = From, .Color = Color });
+	m_LineGeometryBuffer->AppendVertex({ .Position = To, .Color = Color });
 }
 
 glm::vec2 Renderer::FramebufferSize() const
@@ -98,11 +98,11 @@ glm::vec2 Renderer::FramebufferSize() const
 	return { m_Window.Width(), m_Window.Height() };
 }
 
-Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std::unique_ptr<GeometryBuffer<DebugLineVertex>> DebugLineGeometryBuffer, std::unique_ptr<Shader> DebugLineShader)
+Renderer::Renderer(Window& Window, std::unique_ptr<Shader> VectorIconShader, std::unique_ptr<GeometryBuffer<LineVertex>> LineGeometryBuffer, std::unique_ptr<Shader> LineShader)
 	: m_Window(Window)
 	, m_VectorIconShader(std::move(VectorIconShader))
-	, m_DebugLineGeometryBuffer(std::move(DebugLineGeometryBuffer))
-	, m_DebugLineShader(std::move(DebugLineShader))
+	, m_LineGeometryBuffer(std::move(LineGeometryBuffer))
+	, m_LineShader(std::move(LineShader))
 {
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_BLEND);

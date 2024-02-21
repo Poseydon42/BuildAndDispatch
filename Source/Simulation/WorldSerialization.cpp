@@ -171,7 +171,17 @@ std::optional<Train> DeserializeTrain(const json& Train)
 		.OffsetInTile = Train["offset"],
 		.Direction = Train["direction"],
 		.Length = Train["length"],
-		.Timetable = Timetable({})
+		.Timetable = Timetable(
+			// FIXME
+			WorldTime::FromSeconds(0.0f),
+			WorldTime::FromSeconds(0.0f),
+			WorldTime::FromSeconds(0.0f),
+			WorldTime::FromSeconds(0.0f),
+			"",
+			"",
+			"",
+			0.0f
+		)
 	};
 	return Result;
 }

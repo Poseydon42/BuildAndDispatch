@@ -49,13 +49,13 @@ std::unique_ptr<GeometryBuffer<UIVertex>> CreateQuad(Rect2D Rect, glm::vec2 Fram
 {
 	std::vector<UIVertex> Vertices =
 	{
-		{.Position = glm::vec2(Rect.Left() , Rect.Top()) / FramebufferSize, .TextureCoordinates = { 0.0f, 1.0f } },
-		{.Position = glm::vec2(Rect.Right(), Rect.Top()) / FramebufferSize, .TextureCoordinates = { 1.0f, 1.0f } },
-		{.Position = glm::vec2(Rect.Left() , Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 0.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Left() , Rect.Top()) / FramebufferSize, .TextureCoordinates = { 0.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Right(), Rect.Top()) / FramebufferSize, .TextureCoordinates = { 1.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Left() , Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 0.0f, 1.0f } },
 
-		{.Position = glm::vec2(Rect.Left() , Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 0.0f, 0.0f } },
-		{.Position = glm::vec2(Rect.Right(), Rect.Top()) / FramebufferSize, .TextureCoordinates = { 1.0f, 1.0f } },
-		{.Position = glm::vec2(Rect.Right(), Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 1.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Left() , Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 0.0f, 1.0f } },
+		{.Position = glm::vec2(Rect.Right(), Rect.Top()) / FramebufferSize, .TextureCoordinates = { 1.0f, 0.0f } },
+		{.Position = glm::vec2(Rect.Right(), Rect.Bottom()) / FramebufferSize, .TextureCoordinates = { 1.0f, 1.0f } },
 	};
 
 	return GeometryBuffer<UIVertex>::Create(Vertices.size(), false, Vertices);;
@@ -91,10 +91,10 @@ void RenderBuffer::Debug_RectOutline(Rect2D Rect, glm::vec3 Color)
 	auto BottomRight = glm::vec2(Rect.Right(), Rect.Bottom()) / m_Renderer.FramebufferSize() * 2.0f - 1.0f;
 	auto BottomLeft = glm::vec2(Rect.Left(), Rect.Bottom()) / m_Renderer.FramebufferSize() * 2.0f - 1.0f;
 
-	m_Renderer.Debug_PushLine(TopLeft, TopRight, Color);
-	m_Renderer.Debug_PushLine(TopRight, BottomRight, Color);
-	m_Renderer.Debug_PushLine(BottomRight, BottomLeft, Color);
-	m_Renderer.Debug_PushLine(BottomLeft, TopLeft, Color);
+	m_Renderer.DrawLine(TopLeft, TopRight, Color);
+	m_Renderer.DrawLine(TopRight, BottomRight, Color);
+	m_Renderer.DrawLine(BottomRight, BottomLeft, Color);
+	m_Renderer.DrawLine(BottomLeft, TopLeft, Color);
 }
 
 struct TextVertex

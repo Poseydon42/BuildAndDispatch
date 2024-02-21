@@ -44,8 +44,17 @@ struct Train
 	Timetable Timetable;
 
 	/*
+	 * Player's score for correctly and timely routing the current train.
+	 */
+	float Score = 0.0f;
+
+	/*
+	 * True if and only if the train is moving
+	 */
+	bool IsMoving = false;
+
+	/*
 	 * NOTE: the following fields should not be exposed publicly. They are just cached data to make the simulation easier to code.
 	 */
 	const TrackArea* CurrentArea = nullptr;
-	float StoppingTime = 0.0f;
 };

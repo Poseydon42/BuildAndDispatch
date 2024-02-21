@@ -24,14 +24,16 @@ private:
 	std::unique_ptr<Widget> m_RootWidget;
 	World* m_CurrentWorld = nullptr;
 
-	Label* m_GameTimeLabel = nullptr;
+	std::shared_ptr<Label> m_GameTimeLabel;
+	std::shared_ptr<Label> m_GameScoreLabel;
 	TableContainer* m_TimetablePanel = nullptr;
 
 	std::unique_ptr<Widget> CreateGameSpeedPanel();
+	std::shared_ptr<Widget> CreateGameScorePanel();
 	std::unique_ptr<Widget> CreateTimetablePanel();
 
-	std::shared_ptr<Font> m_TimetableFont;
-	uint32_t m_TimetableFontSize = 22;
+	std::shared_ptr<Font> m_UIFont;
+	uint32_t m_UIFontSize = 18;
 
 	void UpdateTimetablePanel(const World& World);
 };

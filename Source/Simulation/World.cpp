@@ -84,7 +84,7 @@ void World::AddSignal(SignalLocation Location, SignalKind Kind)
 
 void World::SpawnTrain(std::string ID, float Length, Timetable Timetable)
 {
-	BD_ASSERT(Timetable.State == TimetableState::NotSpawned);
+	BD_ASSERT(Timetable.State() == TimetableState::NotSpawned);
 	Train NewTrain =
 	{
 		.ID = std::move(ID),
@@ -399,7 +399,16 @@ float World::MoveAlongTrack(
 
 void World::UpdateTrain(Train& Train, float DeltaTime)
 {
-	switch (Train.Timetable.State)
+	if (Train.Timetable.IsPresentInTheWorld())
+	{
+		Train.Timetable.Update(DeltaTime);
+
+		if (Train.IsMoving)
+			UpdateMovingTrain(Train, DeltaTime);
+		UpdateTrackStateForTrain(Train);
+	}
+
+	switch (Train.Timetable.State())
 	{
 	case TimetableState::NotSpawned:
 		if (m_CurrentTime >= Train.Timetable.SpawnTime)
@@ -409,22 +418,29 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 			Train.Tile = Exit->Location;
 			Train.Direction = Exit->SpawnDirection;
 			Train.OffsetInTile = 0.00001f; // NOTE: if we set it to 0.0 then the train would get stuck infinitely changing its direction to opposite
+			Train.IsMoving = true;
 
-			Train.Timetable.AdvanceState();
+			Train.Timetable.JustSpawned();
 		}
 		break;
 	case TimetableState::MovingToDestination:
-		UpdateMovingTrain(Train, DeltaTime);
 		break;
 	case TimetableState::StoppedAtDestination:
-		UpdateTrackStateForTrain(Train);
-		Train.StoppingTime += DeltaTime;
-		if (Train.StoppingTime >= Train.Timetable.MinStopDuration && CurrentTime() >= Train.Timetable.DepartureTime)
-			Train.Timetable.AdvanceState();
+	{
+		auto PotentialSignalLocation = SignalLocation{ .FromTile = Train.Tile, .ToTile = Train.Tile + TrackDirectionToVector(Train.Direction) };
+		const auto* PotentialSignal = FindSignal(PotentialSignalLocation);
+		bool RedSignalAhead = PotentialSignal && PotentialSignal->State == SignalState::Danger;
+		if (Train.Timetable.ShouldDepart(m_CurrentTime) && !RedSignalAhead)
+		{
+			Train.IsMoving = true;
+
+			BD_ASSERT(Train.CurrentArea);
+			Train.Timetable.JustDeparted(Train.CurrentArea->Name, m_CurrentTime);
+		}
 		break;
+	}
 	case TimetableState::MovingToExit:
 	{
-		UpdateMovingTrain(Train, DeltaTime);
 		const auto* Exit = FindExit(Train.Timetable.LeaveLocation);
 		BD_ASSERT(Exit);
 		// NOTE: we can compare floats directly since we know that exits are located on dead ends,
@@ -432,7 +448,7 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 		if (Train.Tile == Exit->Location && Train.OffsetInTile == 0.0f)
 		{
 			BD_LOG_DEBUG("Train {} had left the simulation", Train.ID);
-			Train.Timetable.AdvanceState();
+			Train.Timetable.JustLeft(m_CurrentTime);
 		}
 		break;
 	}
@@ -445,6 +461,8 @@ void World::UpdateTrain(Train& Train, float DeltaTime)
 
 void World::UpdateMovingTrain(Train& Train, float DeltaTime)
 {
+	BD_ASSERT(Train.IsMoving);
+
 	// In m/s
 	constexpr float TrainSpeed = 0.20f;
 	float DistanceToTravel = TrainSpeed * DeltaTime;
@@ -455,7 +473,7 @@ void World::UpdateMovingTrain(Train& Train, float DeltaTime)
 	MoveAlongTrack(CurrentTile, Train.Direction, Train.OffsetInTile, DistanceToTravel,
 		[&](const TrackTile& From, const TrackTile& To)
 		{
-			if (Train.CurrentArea && Train.Timetable.State == TimetableState::MovingToDestination)
+			if (Train.CurrentArea && Train.Timetable.State() == TimetableState::MovingToDestination)
 			{
 				auto ShouldStop = std::ranges::any_of(Train.CurrentArea->StoppingPoints, 
 					[&](const TrackAreaLocation& StoppingPoint)
@@ -464,10 +482,10 @@ void World::UpdateMovingTrain(Train& Train, float DeltaTime)
 							return true;
 						return false;
 					});
-				if (ShouldStop)
+				if (ShouldStop && Train.Timetable.ShouldStop(Train.CurrentArea->Name))
 				{
-					Train.Timetable.AdvanceState();
-					Train.StoppingTime = 0.0f;
+					Train.Timetable.JustArrived(Train.CurrentArea->Name, m_CurrentTime);
+					Train.IsMoving = false;
 					return false;
 				}
 			}

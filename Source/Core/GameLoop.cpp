@@ -103,27 +103,64 @@ static void GenerateDebugWorld(World& World)
 		.SpawnDirection = TrackDirection::W
 	});
 
-	auto LeftTrainTimetable = Timetable{
-		.SpawnTime = WorldTime::FromSeconds(10.0f),
-		.ArrivalTime = WorldTime::FromSeconds(40.0f),
-		.DepartureTime = WorldTime::FromSeconds(80.0f),
-		.MinStopDuration = 20.0f,
-		.SpawnLocation = "ExitE",
-		.PreferredTrack = "I",
-		.LeaveLocation = "ExitW",
-	};
+	auto LeftTrainTimetable = Timetable(
+		WorldTime::FromSeconds(10.0f),
+		WorldTime::FromSeconds(40.0f),
+		WorldTime::FromSeconds(80.0f),
+		WorldTime::FromSeconds(120.0f),
+		"ExitE",
+		"I",
+		"ExitW",
+		20.0f
+	);
 	World.SpawnTrain("WE01", 0.5f, std::move(LeftTrainTimetable));
-
-	auto RightTrainTimetable = Timetable {
-		.SpawnTime = WorldTime::FromSeconds(5.0f),
-		.ArrivalTime = WorldTime::FromSeconds(40.0f),
-		.DepartureTime = WorldTime::FromSeconds(80.0f),
-		.MinStopDuration = 20.0f,
-		.SpawnLocation = "ExitW",
-		.PreferredTrack = "2",
-		.LeaveLocation = "ExitE",
-	};
+	
+	auto RightTrainTimetable = Timetable(
+		WorldTime::FromSeconds(5.0f),
+		WorldTime::FromSeconds(120.0f),
+		WorldTime::FromSeconds(160.0f),
+		WorldTime::FromSeconds(280.0f),
+		"ExitW",
+		"2",
+		"ExitE",
+		20.0f
+	);
 	World.SpawnTrain("EW01", 6.4f, std::move(RightTrainTimetable));
+
+	auto DummyTimetable = Timetable(
+		WorldTime::FromSeconds(5000.0f),
+		WorldTime::FromSeconds(5000.0f),
+		WorldTime::FromSeconds(5000.0f),
+		WorldTime::FromSeconds(5000.0f),
+		"ExitW",
+		"2",
+		"ExitE",
+		20.0f
+	);
+	World.SpawnTrain("DummyTrain1", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain2", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain3", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
+	World.SpawnTrain("XXXXX", 1.0f, DummyTimetable);
+	World.SpawnTrain("AB", 1.0f, DummyTimetable);
+	World.SpawnTrain("AB", 1.0f, DummyTimetable);
+	World.SpawnTrain("AB", 1.0f, DummyTimetable);
+	World.SpawnTrain("AB", 1.0f, DummyTimetable);
+	World.SpawnTrain("AB", 1.0f, DummyTimetable);
+	World.SpawnTrain("AB", 1.0f, DummyTimetable);
 }
 
 template<typename FuncType>

@@ -127,9 +127,9 @@ void TrackLayer::Render(Renderer& Renderer, const World& World) const
 
 	constexpr auto GridLineColor = glm::vec4(1.0f);
 	for (auto X = TopLeftTile.x; X <= BottomRightTile.x; X++)
-		Renderer.Debug_PushLine(glm::vec2(X + 0.5f, TopLeftTile.y + 0.5f), glm::vec2(X + 0.5f, BottomRightTile.y - 0.5f), GridLineColor);
+		Renderer.DrawLine(glm::vec2(X + 0.5f, TopLeftTile.y + 0.5f), glm::vec2(X + 0.5f, BottomRightTile.y - 0.5f), GridLineColor);
 	for (auto Y = BottomRightTile.y; Y <= TopLeftTile.y; Y++)
-		Renderer.Debug_PushLine(glm::vec2(TopLeftTile.x - 0.5f, Y + 0.5f), glm::vec2(BottomRightTile.x + 0.5f, Y + 0.5f), GridLineColor);
+		Renderer.DrawLine(glm::vec2(TopLeftTile.x - 0.5f, Y + 0.5f), glm::vec2(BottomRightTile.x + 0.5f, Y + 0.5f), GridLineColor);
 #endif
 }
 
@@ -198,7 +198,7 @@ void TrackLayer::RenderTrackTile(Renderer& Renderer, const World& World, const T
 		BD_ASSERT(m_TrackColors.contains(State));
 		auto Color = m_TrackColors.at(State);
 
-		Renderer.Debug_PushLine(From, To, Color);
+		Renderer.DrawLine(From, To, Color);
 	});
 }
 
@@ -225,10 +225,10 @@ void TrackLayer::RenderTrain(Renderer& Renderer, const Train& Train) const
 	auto V3 = TrainLocation + glm::vec2(-DebugTrainHalfSize, -DebugTrainHalfSize);
 	auto V4 = TrainLocation + glm::vec2(-DebugTrainHalfSize, DebugTrainHalfSize);
 
-	Renderer.Debug_PushLine(V1, V2, DebugTrainColor);
-	Renderer.Debug_PushLine(V2, V3, DebugTrainColor);
-	Renderer.Debug_PushLine(V3, V4, DebugTrainColor);
-	Renderer.Debug_PushLine(V4, V1, DebugTrainColor);
+	Renderer.DrawLine(V1, V2, DebugTrainColor);
+	Renderer.DrawLine(V2, V3, DebugTrainColor);
+	Renderer.DrawLine(V3, V4, DebugTrainColor);
+	Renderer.DrawLine(V4, V1, DebugTrainColor);
 }
 
 glm::vec2 TrackLayer::CursorPositionToWorldCoordinates(glm::ivec2 CursorPosition, glm::ivec2 CursorAreaBoundaries) const

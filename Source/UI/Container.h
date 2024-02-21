@@ -11,7 +11,7 @@
 class Container : public Widget
 {
 public:
-	void AddChild(std::unique_ptr<Widget>&& Child)
+	void AddChild(std::shared_ptr<Widget>&& Child)
 	{
 		m_Widgets.push_back(std::move(Child));
 		m_Widgets.back()->SetParent(this);
@@ -41,14 +41,14 @@ public:
 
 	virtual void ForEachChild(const ForEachChildCallbackType& Callback) override
 	{
-		std::ranges::for_each(m_Widgets, [&Callback](const std::unique_ptr<Widget>& Widget) { Callback(*Widget); });
+		std::ranges::for_each(m_Widgets, [&Callback](const std::shared_ptr<Widget>& Widget) { Callback(*Widget); });
 	}
 
 	virtual void ForEachChild(const ForEachChildConstCallbackType& Callback) const override
 	{
-		std::ranges::for_each(m_Widgets, [&Callback](const std::unique_ptr<Widget>& Widget) { Callback(*Widget); });
+		std::ranges::for_each(m_Widgets, [&Callback](const std::shared_ptr<Widget>& Widget) { Callback(*Widget); });
 	}
 
 private:
-	std::vector<std::unique_ptr<Widget>> m_Widgets;
+	std::vector<std::shared_ptr<Widget>> m_Widgets;
 };

@@ -284,6 +284,11 @@ std::span<const TrackTile> World::TrackTiles() const
 	return m_TrackTiles;
 }
 
+std::span<const TrackArea> World::TrackAreas() const
+{
+	return m_TrackAreas;
+}
+
 std::span<const Exit> World::Exits() const
 {
 	return m_Exits;

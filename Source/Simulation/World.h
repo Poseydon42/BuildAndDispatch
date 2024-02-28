@@ -38,6 +38,7 @@ public:
 	bool TryOpenRoute(const Route& Route);
 
 	std::span<const TrackTile> TrackTiles() const;
+	std::span<const TrackArea> TrackAreas() const;
 	std::span<const Exit> Exits() const;
 	std::span<const Signal> Signals() const;
 	std::span<const Train> Trains() const;

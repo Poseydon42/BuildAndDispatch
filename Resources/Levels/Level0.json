@@ -1,0 +1,697 @@
+{
+    "meta": {
+        "time": 0.0
+    },
+    "signals": [
+        {
+            "from": [
+                -5,
+                0
+            ],
+            "state": 0,
+            "to": [
+                -4,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                -1,
+                0
+            ],
+            "state": 0,
+            "to": [
+                0,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                0,
+                0
+            ],
+            "state": 0,
+            "to": [
+                -1,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                -3,
+                1
+            ],
+            "state": 0,
+            "to": [
+                -4,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                3,
+                0
+            ],
+            "state": 0,
+            "to": [
+                4,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                -2,
+                -1
+            ],
+            "state": 0,
+            "to": [
+                -3,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                2,
+                1
+            ],
+            "state": 0,
+            "to": [
+                3,
+                1
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                4,
+                -1
+            ],
+            "state": 0,
+            "to": [
+                5,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                7,
+                0
+            ],
+            "state": 0,
+            "to": [
+                6,
+                0
+            ],
+            "kind": "manual"
+        },
+        {
+            "from": [
+                -6,
+                0
+            ],
+            "state": 0,
+            "to": [
+                -7,
+                0
+            ],
+            "kind": "automatic"
+        },
+        {
+            "from": [
+                8,
+                0
+            ],
+            "state": 0,
+            "to": [
+                9,
+                0
+            ],
+            "kind": "automatic"
+        }
+    ],
+    "tiles": [
+        {
+            "coordinates": [
+                -9,
+                0
+            ],
+            "directions": 4,
+            "selected_path": 0,
+            "states": [
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -8,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -7,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -6,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -5,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -4,
+                0
+            ],
+            "directions": 70,
+            "selected_path": 0,
+            "states": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -3,
+                0
+            ],
+            "directions": 76,
+            "selected_path": 0,
+            "states": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -2,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -1,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                0,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                1,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                2,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                3,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                4,
+                0
+            ],
+            "directions": 196,
+            "selected_path": 0,
+            "states": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                5,
+                0
+            ],
+            "directions": 100,
+            "selected_path": 0,
+            "states": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                6,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                7,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                8,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                9,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                10,
+                0
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                11,
+                0
+            ],
+            "directions": 64,
+            "selected_path": 0,
+            "states": [
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -3,
+                1
+            ],
+            "directions": 36,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -2,
+                1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -1,
+                1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                0,
+                1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                1,
+                1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                2,
+                1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                3,
+                1
+            ],
+            "directions": 76,
+            "selected_path": 0,
+            "states": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                4,
+                1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                5,
+                1
+            ],
+            "directions": 64,
+            "selected_path": 0,
+            "states": [
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -2,
+                -1
+            ],
+            "directions": 132,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                -1,
+                -1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                0,
+                -1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                1,
+                -1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                2,
+                -1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                3,
+                -1
+            ],
+            "directions": 68,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        },
+        {
+            "coordinates": [
+                4,
+                -1
+            ],
+            "directions": 66,
+            "selected_path": 0,
+            "states": [
+                0,
+                0
+            ]
+        }
+    ],
+    "track_areas": [
+        {
+            "name": "I",
+            "entry_points": [
+                {
+                    "from": [ -3, 0 ],
+                    "to": [ -2, 0 ]
+                },
+                {
+                    "from": [ 4, 0 ],
+                    "to": [ 3, 0 ]
+                }
+            ],
+            "stopping_points": [
+                {
+                    "from": [ -2, 0 ],
+                    "to": [ -3, 0 ]
+                },
+                {
+                    "from": [ 3, 0 ],
+                    "to": [ 4, 0 ]
+                }
+            ]
+        },
+        {
+            "name": "2",
+            "entry_points": [
+                {
+                    "from": [ -4, 0 ],
+                    "to": [ -3, 1 ]
+                },
+                {
+                    "from": [ 3, 1 ],
+                    "to": [ 2, 1 ]
+                }
+            ],
+            "stopping_points": [
+                {
+                    "from": [ -2, 1 ],
+                    "to": [ -3, 1 ]
+                },
+                {
+                    "from": [ 2, 1 ],
+                    "to": [ 3, 1 ]
+                }
+            ]
+        }
+    ],
+    "exits": [
+        {
+            "name": "ExitE",
+            "location": [ -9, 0 ],
+            "spawn_direction": "E"
+        },
+        {
+            "name": "ExitW",
+            "location": [ 11, 0 ],
+            "spawn_direction": "W"
+        }
+    ],
+    "trains": [
+        {
+            "direction": 0,
+            "id": "WE01",
+            "length": 0.5,
+            "offset": 0.0,
+            "tile": [
+                -2147483648,
+                -2147483648
+            ],
+            "timetable": {
+                "spawn_time": 10.0,
+                "arrival_time": 40.0,
+                "departure_time": 80.0,
+                "leave_time": 120.0,
+                "spawn_location": "ExitE",
+                "preferred_track": "I",
+                "leave_location": "ExitW",
+                "min_stop": 20.0
+            }
+        },
+        {
+            "direction": 0,
+            "id": "EW01",
+            "length": 6.400000095367432,
+            "offset": 0.0,
+            "tile": [
+                -2147483648,
+                -2147483648
+            ],
+            "timetable": {
+                "spawn_time": 5.0,
+                "arrival_time": 120.0,
+                "departure_time": 160.0,
+                "leave_time": 280.0,
+                "spawn_location": "ExitW",
+                "preferred_track": "2",
+                "leave_location": "ExitE",
+                "min_stop": 20.0
+            }
+        }
+    ],
+    "objects": [
+        {
+            "type": "rect",
+            "min": [ 0.3, 0.3 ],
+            "max": [ 0.5, 0.7 ],
+            "color": [ 0.85, 0.55, 0.08, 1.0 ]
+        }
+    ]
+}

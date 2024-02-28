@@ -12,157 +12,6 @@ static constexpr uint32_t WindowWidth = 1280;
 static constexpr uint32_t WindowHeight = 720;
 static constexpr const char* WindowName = "Build & Dispatch";
 
-static void GenerateDebugWorld(World& World)
-{
-	World.AddTrack(-9, 0, -8, 0);
-	World.AddTrack(-8, 0, -7, 0);
-	World.AddTrack(-7, 0, -6, 0);
-	World.AddTrack(-6, 0, -5, 0);
-	World.AddTrack(-5, 0, -4, 0);
-	World.AddTrack(-4, 0, -3, 0);
-	World.AddTrack(-3, 0, -2, 0);
-	World.AddTrack(-2, 0, -1, 0);
-	World.AddTrack(-1, 0, 0, 0);
-	World.AddTrack(0, 0, 1, 0);
-	World.AddTrack(1, 0, 2, 0);
-	World.AddTrack(2, 0, 3, 0);
-	World.AddTrack(3, 0, 4, 0);
-	World.AddTrack(4, 0, 5, 0);
-	World.AddTrack(5, 0, 6, 0);
-	World.AddTrack(6, 0, 7, 0);
-	World.AddTrack(7, 0, 8, 0);
-	World.AddTrack(8, 0, 9, 0);
-	World.AddTrack(9, 0, 10, 0);
-	World.AddTrack(10, 0, 11, 0);
-
-	World.AddTrack(-3, 1, -2, 1);
-	World.AddTrack(-2, 1, -1, 1);
-	World.AddTrack(-1, 1, 0, 1);
-	World.AddTrack(0, 1, 1, 1);
-	World.AddTrack(1, 1, 2, 1);
-	World.AddTrack(2, 1, 3, 1);
-	World.AddTrack(3, 1, 4, 1);
-	World.AddTrack(4, 1, 5, 1);
-
-	World.AddTrack(-2, -1, -1, -1);
-	World.AddTrack(-1, -1, 0, -1);
-	World.AddTrack(0, -1, 1, -1);
-	World.AddTrack(1, -1, 2, -1);
-	World.AddTrack(2, -1, 3, -1);
-	World.AddTrack(3, -1, 4, -1);
-
-	World.AddTrack(-4, 0, -3, 1);
-	World.AddTrack(-3, 0, -2, -1);
-	World.AddTrack(3, 1, 4, 0);
-	World.AddTrack(4, -1, 5, 0);
-
-	World.AddSignal({ { -5, 0 }, { -4, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { -1, 0 },{ 0, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { 0, 0 },{ -1, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { -3, 1 }, { -4, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { 3, 0 },{ 4, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { -2, -1 }, { -3, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { 2, 1 },{ 3, 1 } }, SignalKind::Manual);
-	World.AddSignal({ { 4, -1 },{ 5, 0 } }, SignalKind::Manual);
-	World.AddSignal({ { 7, 0 },{ 6, 0} }, SignalKind::Manual);
-
-	World.AddSignal({ { -6, 0 }, { -7, 0 } }, SignalKind::Automatic);
-	World.AddSignal({ { 8, 0 }, { 9, 0 } }, SignalKind::Automatic);
-
-	World.AddTrackArea({
-		.Name = "I",
-		.EntryPoints = {
-			{ .TileFrom = { -3, 0 }, .TileTo = { -2, 0 } },
-			{ .TileFrom = { 4, 0 }, .TileTo = { 3, 0 } },
-		},
-		.StoppingPoints = {
-			{ .TileFrom = { -2, 0 }, .TileTo = { -3, 0 } },
-			{ .TileFrom = { 3, 0 }, .TileTo = { 4, 0 } },
-		}
-	});
-	World.AddTrackArea({
-		.Name = "2",
-		.EntryPoints = {
-			{ .TileFrom = { -4, 0 }, .TileTo = { -3, 1 } },
-			{ .TileFrom = { 3, 1 }, .TileTo = { 2, 1 } },
-		},
-		.StoppingPoints = {
-			{ .TileFrom = { -2, 1 }, .TileTo = { -3, 1 } },
-			{ .TileFrom = { 2, 1 }, .TileTo = { 3, 1 } },
-		}
-	});
-
-	World.AddExit(Exit{
-		.Name = "ExitE",
-		.Location = { -9, 0 },
-		.SpawnDirection = TrackDirection::E
-	});
-	World.AddExit(Exit{
-		.Name = "ExitW",
-		.Location = { 11, 0 },
-		.SpawnDirection = TrackDirection::W
-	});
-
-	auto LeftTrainTimetable = Timetable(
-		WorldTime::FromSeconds(10.0f),
-		WorldTime::FromSeconds(40.0f),
-		WorldTime::FromSeconds(80.0f),
-		WorldTime::FromSeconds(120.0f),
-		"ExitE",
-		"I",
-		"ExitW",
-		20.0f
-	);
-	World.SpawnTrain("WE01", 0.5f, std::move(LeftTrainTimetable));
-	
-	auto RightTrainTimetable = Timetable(
-		WorldTime::FromSeconds(5.0f),
-		WorldTime::FromSeconds(120.0f),
-		WorldTime::FromSeconds(160.0f),
-		WorldTime::FromSeconds(280.0f),
-		"ExitW",
-		"2",
-		"ExitE",
-		20.0f
-	);
-	World.SpawnTrain("EW01", 6.4f, std::move(RightTrainTimetable));
-
-	auto DummyTimetable = Timetable(
-		WorldTime::FromSeconds(5000.0f),
-		WorldTime::FromSeconds(5000.0f),
-		WorldTime::FromSeconds(5000.0f),
-		WorldTime::FromSeconds(5000.0f),
-		"ExitW",
-		"2",
-		"ExitE",
-		20.0f
-	);
-	World.SpawnTrain("DummyTrain1", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain2", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain3", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("DummyTrain4", 1.0f, DummyTimetable);
-	World.SpawnTrain("XXXXX", 1.0f, DummyTimetable);
-	World.SpawnTrain("AB", 1.0f, DummyTimetable);
-	World.SpawnTrain("AB", 1.0f, DummyTimetable);
-	World.SpawnTrain("AB", 1.0f, DummyTimetable);
-	World.SpawnTrain("AB", 1.0f, DummyTimetable);
-	World.SpawnTrain("AB", 1.0f, DummyTimetable);
-	World.SpawnTrain("AB", 1.0f, DummyTimetable);
-}
-
 template<typename FuncType>
 void DispatchEventForEachLayer(const std::vector<std::unique_ptr<Layer>>& Layers, FuncType&& Func)
 {
@@ -240,7 +89,9 @@ GameLoop::GameLoop(std::unique_ptr<Window> Window, std::unique_ptr<Renderer> Ren
 	m_Layers.push_back(TrackLayer::Create());
 	m_Layers.push_back(std::make_unique<GameUILayer>());
 
-	GenerateDebugWorld(m_World);
+	static constexpr auto DefaultLevelName = "Resources/Levels/Level0.json";
+	auto SerializedWorld = FileSystem::ReadFileAsString(DefaultLevelName).value_or("");
+	m_World = WorldSerialization::Deserialize(SerializedWorld);
 
 	m_Window->AddMouseButtonCallback([this](MouseButton::Button Button, ButtonEventType::Type Type, int32_t CursorX, int32_t CursorY)
 	{

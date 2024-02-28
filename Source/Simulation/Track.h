@@ -83,6 +83,27 @@ constexpr TrackDirection TrackDirectionFromVector(glm::ivec2 Direction)
 	BD_UNREACHABLE();
 }
 
+constexpr TrackDirection TrackDirectionFromString(std::string_view Direction)
+{
+	if (Direction == "N")
+		return TrackDirection::N;
+	if (Direction == "NE")
+		return TrackDirection::NE;
+	if (Direction == "E")
+		return TrackDirection::E;
+	if (Direction == "SE")
+		return TrackDirection::SE;
+	if (Direction == "S")
+		return TrackDirection::S;
+	if (Direction == "SW")
+		return TrackDirection::SW;
+	if (Direction == "W")
+		return TrackDirection::W;
+	if (Direction == "NW")
+		return TrackDirection::NW;
+	BD_UNREACHABLE();
+}
+
 constexpr glm::ivec2 TrackDirectionToVector(TrackDirection Direction)
 {
 	switch (Direction)
